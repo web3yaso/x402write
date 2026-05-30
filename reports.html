@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>报告目录 — Web3Law</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500;1,700;1,800;1,900&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ============================================================
+       Web3Law · /reports — on-chain report catalog.
+       Cards carry an EAS attestation badge (Story 2).
+       Same design tokens as 01-home.html.
+       ============================================================ */
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --paper:      #f3f0e9;
+      --paper-soft: #ece8df;
+      --paper-card: #fffdf8;
+      --ink:        #1a1714;
+      --ink-soft:   #4a4339;
+      --ink-mute:   #8a8278;
+      --line:       #d9d2c5;
+      --line-soft:  #e6e0d4;
+      --charcoal:   #1e1b18;
+      --crimson:    #8B1F30;
+      --crimson-hi: #A83245;
+      --ok:         #2f6b3f;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      font-feature-settings: "tnum" 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    ::selection { background: var(--crimson); color: #fff; }
+    em { font-style: italic; }
+
+    /* ─── MASTHEAD ─── */
+    .mast {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(243, 240, 233, 0.92);
+      backdrop-filter: saturate(160%) blur(10px);
+      -webkit-backdrop-filter: saturate(160%) blur(10px);
+      border-bottom: 0.5px solid var(--line);
+    }
+    .mast-row {
+      max-width: 1080px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px; padding: 0 28px;
+    }
+    .brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15.5px; letter-spacing: -0.01em;
+    }
+    .brand .mark {
+      width: 22px; height: 22px; background: var(--ink);
+      border-radius: 5px; position: relative; flex-shrink: 0;
+    }
+    .brand .mark::after {
+      content: ""; position: absolute; inset: 5px 6px;
+      border: 1.5px solid var(--paper); border-radius: 2px;
+    }
+    .brand .mark::before {
+      content: ""; position: absolute; top: 4px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 5px;
+      border: 1.5px solid var(--paper); border-bottom: none;
+      border-radius: 3px 3px 0 0;
+    }
+    /* Wallet-login crest */
+    .wallet-crest {
+      position: relative; flex-shrink: 0;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: transparent; padding: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    /* logged-out: default brand seal */
+    .wc-default {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--crimson-hi) 0%, var(--crimson) 60%, #4a1a22 100%);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .wc-default::after {
+      content: ""; position: absolute; top: 6px; right: 7px;
+      width: 6px; height: 6px; background: #f0c14b; border-radius: 50%; opacity: .85;
+    }
+    .wallet-crest:hover .wc-default { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(139,31,48,0.12); }
+    /* logged-in: deterministic avatar */
+    .wc-avatar {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--paper-soft);
+      box-shadow: inset 0 0 0 2px var(--paper);
+      display: none;
+    }
+    .wc-dot {
+      position: absolute; right: -1px; bottom: -1px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #2f6b3f; border: 2px solid var(--paper);
+      display: none;
+    }
+    .wallet-crest.on .wc-default { display: none; }
+    .wallet-crest.on .wc-avatar { display: block; }
+    .wallet-crest.on .wc-dot { display: block; }
+    .wallet-crest.on:hover .wc-avatar { box-shadow: inset 0 0 0 2px var(--paper), 0 0 0 4px rgba(47,107,63,0.16); }
+
+    /* Wallet popover */
+    .wallet-pop {
+      position: absolute; top: calc(100% + 8px); right: 28px; z-index: 65;
+      width: 248px;
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; box-shadow: 0 18px 44px rgba(20,18,15,0.16);
+      padding: 7px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .wallet-pop.open { opacity: 1; transform: none; pointer-events: auto; }
+    .wp-state { padding: 12px 12px 4px; }
+    .wp-row { display: flex; align-items: center; gap: 11px; }
+    .wp-av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: var(--paper-soft); }
+    .wp-meta { min-width: 0; }
+    .wp-meta .wp-l1 { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .wp-meta .wp-l2 {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute);
+      margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .wp-net {
+      display: inline-flex; align-items: center; gap: 6px; margin: 12px 0 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-soft);
+    }
+    .wp-net .gdot { width: 6px; height: 6px; border-radius: 50%; background: #2f6b3f; }
+    .wp-actions { padding: 6px; border-top: 0.5px solid var(--line-soft); margin-top: 8px; }
+    .wp-btn {
+      width: 100%; text-align: left; border: none; background: transparent;
+      border-radius: 9px; padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--ink);
+      transition: background .12s; cursor: pointer;
+    }
+    .wp-btn:hover { background: var(--paper-soft); }
+    .wp-btn.danger { color: var(--crimson); }
+    .wp-connect { padding: 14px 12px 8px; }
+    .wp-connect .wp-ttl { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+    .wp-connect .wp-sub { font-size: 12px; color: var(--ink-mute); margin: 0 0 12px; line-height: 1.5; }
+    .wp-connect .wp-cta {
+      width: 100%; background: var(--ink); color: var(--paper); border: none;
+      border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .wp-connect .wp-cta:hover { background: var(--crimson); }
+
+    /* Hamburger menu */
+    .mast-row { position: relative; }
+    .mast-right { display: flex; align-items: center; gap: 14px; }
+    .menu-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 0.5px solid var(--line); background: var(--paper-card);
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: border-color .15s;
+    }
+    .menu-btn:hover { border-color: var(--ink); }
+    .menu-btn .bars, .menu-btn .bars::before, .menu-btn .bars::after {
+      display: block; width: 16px; height: 1.5px; background: var(--ink);
+      border-radius: 2px; transition: transform .2s, opacity .2s, background .2s;
+    }
+    .menu-btn .bars { position: relative; }
+    .menu-btn .bars::before { content: ""; position: absolute; top: -5px; left: 0; }
+    .menu-btn .bars::after { content: ""; position: absolute; top: 5px; left: 0; }
+    .menu-btn.open .bars { background: transparent; }
+    .menu-btn.open .bars::before { transform: translateY(5px) rotate(45deg); }
+    .menu-btn.open .bars::after { transform: translateY(-5px) rotate(-45deg); }
+    .menu-panel {
+      position: absolute; top: calc(100% + 8px); right: 28px; z-index: 60;
+      width: 234px;
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; box-shadow: 0 18px 44px rgba(20,18,15,0.16);
+      padding: 7px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .menu-panel.open { opacity: 1; transform: none; pointer-events: auto; }
+    .menu-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute);
+      padding: 9px 12px 7px;
+    }
+    .menu-panel a {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 12px; border-radius: 9px;
+      color: var(--ink); transition: background .12s;
+    }
+    .menu-panel a:hover { background: var(--paper-soft); }
+    .menu-panel a .mtxt { display: flex; flex-direction: column; }
+    .menu-panel a .mt { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+    .menu-panel a .msub { font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+    .menu-panel a .ar { color: var(--ink-mute); font-size: 14px; flex-shrink: 0; }
+    .menu-panel a:hover .ar { color: var(--crimson); }
+
+    /* ─── PAGE ─── */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 52px 28px 110px;
+    }
+    @media (max-width: 600px) { main { padding: 32px 20px 72px; } }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--crimson);
+      margin: 0 0 16px;
+    }
+    .display {
+      font-weight: 800;
+      font-size: clamp(30px, 4.6vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      margin: 0;
+      max-width: 20ch;
+    }
+    .display em { font-style: italic; font-weight: 900; }
+    .sub {
+      margin: 18px 0 0;
+      max-width: 58ch;
+      font-size: 14.5px; line-height: 1.62;
+      color: var(--ink-soft);
+    }
+
+    /* ─── Search ─── */
+    .search {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 8px 7px 18px;
+      margin: 30px 0 0;
+      max-width: 520px;
+      transition: border-color 0.15s;
+    }
+    .search:focus-within { border-color: var(--crimson); }
+    .search svg { color: var(--ink-mute); flex-shrink: 0; }
+    .search input {
+      flex: 1; border: none; outline: none; background: transparent;
+      font-family: inherit; font-size: 14px; color: var(--ink); padding: 6px 4px;
+    }
+    .search input::placeholder { color: var(--ink-mute); }
+    .search button {
+      background: var(--ink); color: var(--paper);
+      border: none; border-radius: 999px; padding: 9px 18px;
+      font-size: 13px; font-weight: 600; transition: background 0.15s;
+    }
+    .search button:hover { background: var(--crimson); }
+
+    /* ─── Filter chips ─── */
+    .filters {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+      margin: 22px 0 0;
+    }
+    .filters .lbl {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-mute); margin-right: 4px;
+    }
+    .filters .lbl + .lbl, .fchip + .lbl { margin-left: 12px; }
+    .fchip {
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 999px; padding: 5px 13px;
+      font-size: 12.5px; color: var(--ink-soft);
+      transition: all 0.15s;
+    }
+    .fchip:hover:not(.active) { border-color: var(--crimson); color: var(--crimson); }
+    .fchip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
+
+    /* ─── Results meta ─── */
+    .results-meta {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+      margin: 38px 0 0; padding-bottom: 14px;
+      border-bottom: 0.5px solid var(--ink-mute);
+    }
+    .results-meta .count { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .results-meta .count em { color: var(--crimson); font-style: normal; font-family: 'JetBrains Mono', monospace; margin: 0 3px; }
+    .results-meta .src {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute);
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .results-meta .src .gdot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+
+    /* ─── Article card ─── */
+    .cards { display: flex; flex-direction: column; }
+    .card {
+      display: block;
+      padding: 26px 0;
+      border-bottom: 0.5px solid var(--line);
+      transition: opacity 0.15s;
+    }
+    .card:hover { opacity: 0.94; }
+    .card:hover h2 { color: var(--crimson); }
+
+    .card-top {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .tag {
+      font-size: 11.5px; font-weight: 500; border-radius: 999px;
+      padding: 3px 11px; background: var(--paper-soft);
+      border: 0.5px solid var(--line); color: var(--ink-soft);
+    }
+    .tag.cat { color: #fff; }
+    .tag.cat.enforcement { background: var(--crimson); border-color: var(--crimson); }
+    .tag.cat.policy { background: #1E3A8A; border-color: #1E3A8A; }
+    .tag.cat.licensing { background: #78350F; border-color: #78350F; }
+    .tag.cat.sanctions { background: #581C87; border-color: #581C87; }
+
+    /* EAS badge */
+    .eas {
+      display: inline-flex; align-items: center; gap: 7px;
+      flex-shrink: 0;
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 11px 5px 9px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--ink-soft);
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .eas:hover { border-color: var(--ok); color: var(--ink); }
+    .eas .chk {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--ok); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 9px; flex-shrink: 0;
+    }
+    .eas .uid { color: var(--ink-mute); }
+    .eas:hover .uid { color: var(--ok); }
+    .eas .ext { color: var(--ink-mute); font-size: 10px; }
+    /* degraded indexing state */
+    .eas.indexing { border-style: dashed; color: var(--ink-mute); }
+    .eas.indexing .chk {
+      background: transparent; border: 1.5px solid var(--ink-mute);
+      animation: pulse 1.3s ease-in-out infinite;
+    }
+    .eas.indexing:hover { border-color: var(--ink-mute); color: var(--ink-mute); cursor: default; }
+    @keyframes pulse { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+    .card h2 {
+      font-weight: 800; font-size: 21px; line-height: 1.3;
+      letter-spacing: -0.018em; color: var(--ink);
+      margin: 13px 0 8px; transition: color 0.15s;
+      max-width: 32ch; text-wrap: pretty;
+    }
+    .card p {
+      color: var(--ink-soft); font-size: 13.5px; line-height: 1.62;
+      margin: 0 0 16px; max-width: 64ch;
+    }
+    .card-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; flex-wrap: wrap;
+    }
+    .byline {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-size: 13px; color: var(--ink-soft);
+    }
+    .avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--crimson); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 12px; flex-shrink: 0;
+    }
+    .avatar.chen { background: var(--crimson); }
+    .avatar.zhou { background: #7C2D12; }
+    .avatar.wang { background: #78350F; }
+    .avatar.lin  { background: #1E3A8A; }
+    .avatar.yao  { background: #581C87; }
+    .byline b { font-weight: 600; color: var(--ink); }
+    .byline .plat {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute);
+    }
+    .price {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600;
+      background: var(--crimson); color: #fff;
+      border-radius: 8px; padding: 6px 12px;
+    }
+    .price::before {
+      content: "x402"; font-size: 9px; letter-spacing: 0.1em;
+      background: rgba(255,255,255,0.22); padding: 2px 5px; border-radius: 3px;
+      font-weight: 500;
+    }
+
+    /* ─── Footer ─── */
+    .foot {
+      border-top: 0.5px solid var(--line);
+      margin-top: 70px; padding: 22px 0 40px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--ink-mute); letter-spacing: 0.02em;
+    }
+    .foot-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    }
+    .foot-inner a:hover { color: var(--crimson); }
+    .foot-l { display: flex; gap: 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+
+  <!-- ─── MASTHEAD ─── -->
+  <header class="mast">
+    <div class="mast-row">
+      <a href="01-home.html" class="brand"><span class="mark"></span>Web3Law</a>
+      <div class="mast-right">
+        <button class="wallet-crest" id="walletCrest" aria-label="连接钱包" aria-expanded="false">
+          <span class="wc-default"></span>
+          <span class="wc-avatar" id="wcAvatar"></span>
+          <span class="wc-dot"></span>
+        </button>
+        <button class="menu-btn" id="menuBtn" aria-label="菜单" aria-expanded="false"><span class="bars"></span></button>
+      </div>
+      <nav class="menu-panel" id="menuPanel" aria-label="站点导航">
+        <div class="menu-eyebrow">Web3Law</div>
+        <a href="publish.html"><span class="mtxt"><span class="mt">发布报告</span><span class="msub">签名上链你的文章</span></span><span class="ar">→</span></a>
+        <a href="reports.html"><span class="mtxt"><span class="mt">报告目录</span><span class="msub">链上可验证内容库</span></span><span class="ar">→</span></a>
+        <a href="how-it-works.html"><span class="mtxt"><span class="mt">How it works</span><span class="msub">三方付费闭环</span></span><span class="ar">→</span></a>
+      </nav>
+      <div class="wallet-pop" id="walletPop"></div>
+    </div>
+  </header>
+
+  <!-- ─── MAIN ─── -->
+  <main data-screen-label="Reports">
+    <p class="eyebrow">On-chain Report Catalog</p>
+    <h1 class="display">每篇报告都<em>带着出处</em>上链。</h1>
+    <p class="sub">合规作者用钱包签名把深度报告写入 Base 上的 EAS 存证。每张卡片右上角都能验证作者地址与时间戳 —— 真人 x402 付费解锁全文,Agent 同价调用 API,款项 100% 直达作者钱包。</p>
+
+    <!-- Search -->
+    <div class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" placeholder="搜索:冻卡 / VASP / MiCA / 帮信罪…" value="OTC 冻卡" />
+      <button type="button">搜索</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <span class="lbl">分类</span>
+      <button class="fchip active">全部</button>
+      <button class="fchip">执法</button>
+      <button class="fchip">政策</button>
+      <button class="fchip">牌照</button>
+      <button class="fchip">制裁</button>
+      <span class="lbl">辖区</span>
+      <button class="fchip">中国大陆</button>
+      <button class="fchip">香港</button>
+      <button class="fchip">新加坡</button>
+      <button class="fchip">欧盟</button>
+    </div>
+
+    <!-- Results meta -->
+    <div class="results-meta">
+      <span class="count">"OTC 冻卡" · <em>6</em> 篇报告</span>
+      <span class="src"><span class="gdot"></span>source: EAS GraphQL · base-sepolia</span>
+    </div>
+
+    <!-- Cards -->
+    <div class="cards">
+
+      <!-- Card 1 · the seed article, freshly attested -->
+      <a href="03-report-detail.html" class="card" data-screen-label="Report otc-freeze-case-001">
+        <div class="card-top">
+          <div class="card-tags">
+            <span class="tag cat enforcement">Enforcement</span>
+            <span class="tag">中国大陆</span>
+            <span class="tag">OTC</span>
+            <span class="tag">帮信罪</span>
+          </div>
+          <span class="eas" title="在 EAS Explorer 验证">
+            <span class="chk">✓</span>on-chain
+            <span class="uid">EAS:0x3b7e…a24</span>
+            <span class="ext">↗</span>
+          </span>
+        </div>
+        <h2>OTC 收 USDT 后银行卡被冻:基于 23 起真实案例的应对指南</h2>
+        <p>复盘 23 起 2024–2026 真实冻卡案例,提炼银行风控与司法冻结的 5 分钟区分法、立即应对的 7 个动作、退赔谈判中的关键底线,以及训诫书该不该签。</p>
+        <div class="card-foot">
+          <span class="byline">
+            <span class="avatar chen">陈</span>
+            <b>陈律师</b>
+            <span class="plat">公众号 @cryptolaw_cn · 14 min</span>
+          </span>
+          <span class="price">$0.30</span>
+        </div>
+      </a>
+
+      <!-- Card 2 -->
+      <a href="#" class="card">
+        <div class="card-top">
+          <div class="card-tags">
+            <span class="tag cat enforcement">Enforcement</span>
+            <span class="tag">中国大陆</span>
+            <span class="tag">退赔</span>
+          </div>
+          <span class="eas" title="在 EAS Explorer 验证">
+            <span class="chk">✓</span>on-chain
+            <span class="uid">EAS:0x91c4…f73</span>
+            <span class="ext">↗</span>
+          </span>
+        </div>
+        <h2>冻卡退赔实务:从查冻到结案,6 个高频踩坑点</h2>
+        <p>访谈 8 位办过同类案件的刑事律师 + 11 位走完退赔流程的当事人。退赔金额怎么谈、走对公账户还是个人账户、出不出书面收据,每一项都有反面案例。</p>
+        <div class="card-foot">
+          <span class="byline">
+            <span class="avatar zhou">周</span>
+            <b>周律师</b>
+            <span class="plat">公众号 @crime_defense_zh · 18 min</span>
+          </span>
+          <span class="price">$0.40</span>
+        </div>
+      </a>
+
+      <!-- Card 3 -->
+      <a href="#" class="card">
+        <div class="card-top">
+          <div class="card-tags">
+            <span class="tag cat policy">Policy</span>
+            <span class="tag">香港</span>
+            <span class="tag">VASP</span>
+          </div>
+          <span class="eas" title="在 EAS Explorer 验证">
+            <span class="chk">✓</span>on-chain
+            <span class="uid">EAS:0x5d2a…0b8</span>
+            <span class="ext">↗</span>
+          </span>
+        </div>
+        <h2>香港 VASP 牌照申请实操:8 个常被驳回的细节</h2>
+        <p>从 12 份递交材料 + 4 份被驳回反馈中提炼。AML 控制、Tier-1 资本、独立董事配置、Travel Rule 衔接、白名单交易所对手方筛选,每一项展开说怎么准备。</p>
+        <div class="card-foot">
+          <span class="byline">
+            <span class="avatar wang">王</span>
+            <b>王律师</b>
+            <span class="plat">公众号 @hk_vasp_legal · 22 min</span>
+          </span>
+          <span class="price">$0.50</span>
+        </div>
+      </a>
+
+      <!-- Card 4 · degraded "indexing…" state (EAS GraphQL timeout) -->
+      <a href="#" class="card">
+        <div class="card-top">
+          <div class="card-tags">
+            <span class="tag cat licensing">Licensing</span>
+            <span class="tag">新加坡</span>
+            <span class="tag">MAS</span>
+            <span class="tag">DPT</span>
+          </div>
+          <span class="eas indexing" title="EAS GraphQL 暂时超时,稍后自动恢复">
+            <span class="chk"></span>indexing…
+          </span>
+        </div>
+        <h2>新加坡 DPT vs SPI vs MPI:三类支付牌照的选择决策树</h2>
+        <p>新加坡 MAS 的三类牌照面向不同业务形态。DPT 给纯加密支付服务,MPI 给传统跨境支付,SPI 给小额账户体系。选错路径会被反复退材料半年起步。</p>
+        <div class="card-foot">
+          <span class="byline">
+            <span class="avatar lin">林</span>
+            <b>林律师</b>
+            <span class="plat">Substack @sgmas_watcher · 18 min</span>
+          </span>
+          <span class="price">$0.40</span>
+        </div>
+      </a>
+
+      <!-- Card 5 -->
+      <a href="#" class="card">
+        <div class="card-top">
+          <div class="card-tags">
+            <span class="tag cat sanctions">Sanctions</span>
+            <span class="tag">美国</span>
+            <span class="tag">OFAC</span>
+            <span class="tag">SDN</span>
+          </div>
+          <span class="eas" title="在 EAS Explorer 验证">
+            <span class="chk">✓</span>on-chain
+            <span class="uid">EAS:0x7f10…ce2</span>
+            <span class="ext">↗</span>
+          </span>
+        </div>
+        <h2>OFAC SDN List 与 DeFi 协议交互:合规边界判断</h2>
+        <p>从 Tornado Cash 制裁案到 2025 年 sanctioned address screening 实操。前端封禁、智能合约层 deny list、节点 RPC 层屏蔽各自的法律风险与剩余敞口。</p>
+        <div class="card-foot">
+          <span class="byline">
+            <span class="avatar yao">姚</span>
+            <b>姚律师</b>
+            <span class="plat">Mirror @ofac_translate · 16 min</span>
+          </span>
+          <span class="price">$0.50</span>
+        </div>
+      </a>
+
+      <!-- Card 6 -->
+      <a href="#" class="card">
+        <div class="card-top">
+          <div class="card-tags">
+            <span class="tag cat policy">Policy</span>
+            <span class="tag">欧盟</span>
+            <span class="tag">MiCA</span>
+          </div>
+          <span class="eas" title="在 EAS Explorer 验证">
+            <span class="chk">✓</span>on-chain
+            <span class="uid">EAS:0xa3e9…41d</span>
+            <span class="ext">↗</span>
+          </span>
+        </div>
+        <h2>MiCA 全面生效后第 100 天:ART/EMT 发行人侧的真实体感</h2>
+        <p>访谈 3 家已拿到欧盟 EMT 牌照的发行人。资本要求、白皮书 EBA 审查、储备资产托管行选择、Article 25 透明度义务,哪些过了一年仍是争议地带。</p>
+        <div class="card-foot">
+          <span class="byline">
+            <span class="avatar wang">王</span>
+            <b>王律师</b>
+            <span class="plat">公众号 @hk_vasp_legal · 20 min</span>
+          </span>
+          <span class="price">$0.50</span>
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="foot">
+    <div class="foot-inner">
+      <div class="foot-l">
+        <a href="01-home.html">home</a>
+        <a href="reports.html">reports</a>
+        <a href="publish.html">publish</a>
+        <a href="https://base-sepolia.easscan.org" target="_blank" rel="noopener">easscan ↗</a>
+      </div>
+      <span>indexed from EAS · base-sepolia · 0% platform fee</span>
+    </div>
+  </footer>
+
+  <script>
+    // Filter chips (visual only)
+    document.querySelectorAll('.filters').forEach(bar => {
+      // group: chips between two .lbl belong together; simple approach — toggle within whole bar by section
+    });
+    document.querySelectorAll('.fchip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        // find this chip's group (siblings until a .lbl boundary)
+        const siblings = [];
+        let n = chip.previousElementSibling;
+        while (n && !n.classList.contains('lbl')) { siblings.push(n); n = n.previousElementSibling; }
+        n = chip.nextElementSibling;
+        while (n && !n.classList.contains('lbl')) { siblings.push(n); n = n.nextElementSibling; }
+        siblings.forEach(s => s.classList.remove('active'));
+        chip.classList.toggle('active');
+      });
+    });
+
+    // EAS badge → open explorer (skip indexing ones)
+    document.querySelectorAll('.eas:not(.indexing)').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.open('https://base-sepolia.easscan.org', '_blank', 'noopener');
+      });
+    });
+    // ── Hamburger menu ──
+    (function () {
+      const mb = document.getElementById('menuBtn');
+      const mp = document.getElementById('menuPanel');
+      if (!mb || !mp) return;
+      function closeMenu() { mp.classList.remove('open'); mb.classList.remove('open'); mb.setAttribute('aria-expanded', 'false'); }
+      mb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = mp.classList.toggle('open');
+        mb.classList.toggle('open', open);
+        mb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', (e) => { if (!mp.contains(e.target) && !mb.contains(e.target)) closeMenu(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    })();
+
+    // ── Wallet login crest ──
+    (function () {
+      const KEY = 'web3law_wallet';
+      const DEMO = '0x7C3aE9d4b18F206c8B9b4c5e2D1a3F7e90C4bA2f';
+      const crest = document.getElementById('walletCrest');
+      const pop = document.getElementById('walletPop');
+      const avatar = document.getElementById('wcAvatar');
+      if (!crest || !pop) return;
+      const short = a => a.slice(0,6) + '…' + a.slice(-4);
+      function gradient(a){
+        const h1 = parseInt(a.slice(2,5),16)%360, h2 = parseInt(a.slice(6,9),16)%360, h3 = parseInt(a.slice(10,13),16)%360;
+        return 'conic-gradient(from 30deg, hsl('+h1+' 58% 52%), hsl('+h2+' 62% 44%), hsl('+h3+' 56% 56%), hsl('+h1+' 58% 52%))';
+      }
+      function render(){
+        const addr = localStorage.getItem(KEY);
+        if (addr) {
+          crest.classList.add('on');
+          crest.setAttribute('aria-label', '账户 ' + short(addr));
+          avatar.style.background = gradient(addr);
+          pop.innerHTML =
+            '<div class="wp-state"><div class="wp-row"><span class="wp-av" style="background:'+gradient(addr)+'"></span>'+
+            '<div class="wp-meta"><div class="wp-l1">已连接</div><div class="wp-l2">'+addr+'</div></div></div>'+
+            '<div class="wp-net"><span class="gdot"></span>Base Sepolia · 已验证</div></div>'+
+            '<div class="wp-actions"><button class="wp-btn" data-act="copy">复制地址</button>'+
+            '<button class="wp-btn danger" data-act="disconnect">断开连接</button></div>';
+        } else {
+          crest.classList.remove('on');
+          crest.setAttribute('aria-label', '连接钱包');
+          pop.innerHTML =
+            '<div class="wp-connect"><p class="wp-ttl">连接钱包</p>'+
+            '<p class="wp-sub">连接后即可签名发布、付费解锁,头像将变为你的链上身份。</p>'+
+            '<button class="wp-cta" data-act="connect">连接钱包</button></div>';
+        }
+      }
+      function close(){ pop.classList.remove('open'); crest.setAttribute('aria-expanded','false'); }
+      crest.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const mp = document.getElementById('menuPanel'), mb = document.getElementById('menuBtn');
+        if (mp) mp.classList.remove('open');
+        if (mb) { mb.classList.remove('open'); mb.setAttribute('aria-expanded','false'); }
+        const open = pop.classList.toggle('open');
+        crest.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      pop.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-act]'); if (!b) return;
+        const act = b.dataset.act;
+        if (act === 'connect') { localStorage.setItem(KEY, DEMO); render(); }
+        else if (act === 'disconnect') { localStorage.removeItem(KEY); render(); close(); }
+        else if (act === 'copy') {
+          if (navigator.clipboard) navigator.clipboard.writeText(localStorage.getItem(KEY) || '');
+          b.textContent = '已复制'; setTimeout(() => { b.textContent = '复制地址'; }, 1300);
+        }
+      });
+      document.addEventListener('click', (e) => { if (!pop.contains(e.target) && !crest.contains(e.target)) close(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      render();
+    })();
+  </script>
+</body>
+</html>

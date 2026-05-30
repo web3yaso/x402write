@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How it works — Web3Law</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500;1,700;1,800;1,900&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ============================================================
+       Web3Law · /how-it-works — the three-party payment loop.
+       Same design tokens as 01-home.html.
+       ============================================================ */
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --paper:      #f3f0e9;
+      --paper-soft: #ece8df;
+      --paper-card: #fffdf8;
+      --ink:        #1a1714;
+      --ink-soft:   #4a4339;
+      --ink-mute:   #8a8278;
+      --line:       #d9d2c5;
+      --line-soft:  #e6e0d4;
+      --charcoal:   #1e1b18;
+      --crimson:    #8B1F30;
+      --crimson-hi: #A83245;
+      --crimson-on-dark: #d29ba2;
+      --ok:         #2f6b3f;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      font-feature-settings: "tnum" 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    ::selection { background: var(--crimson); color: #fff; }
+    em { font-style: italic; }
+    code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ─── MASTHEAD ─── */
+    .mast {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(243, 240, 233, 0.92);
+      backdrop-filter: saturate(160%) blur(10px);
+      -webkit-backdrop-filter: saturate(160%) blur(10px);
+      border-bottom: 0.5px solid var(--line);
+    }
+    .mast-row {
+      max-width: 1080px; margin: 0 auto; position: relative;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px; padding: 0 28px;
+    }
+    .brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15.5px; letter-spacing: -0.01em;
+    }
+    .brand .mark {
+      width: 22px; height: 22px; background: var(--ink);
+      border-radius: 5px; position: relative; flex-shrink: 0;
+    }
+    .brand .mark::after {
+      content: ""; position: absolute; inset: 5px 6px;
+      border: 1.5px solid var(--paper); border-radius: 2px;
+    }
+    .brand .mark::before {
+      content: ""; position: absolute; top: 4px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 5px;
+      border: 1.5px solid var(--paper); border-bottom: none;
+      border-radius: 3px 3px 0 0;
+    }
+    /* Wallet-login crest */
+    .wallet-crest {
+      position: relative; flex-shrink: 0;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: transparent; padding: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    /* logged-out: default brand seal */
+    .wc-default {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--crimson-hi) 0%, var(--crimson) 60%, #4a1a22 100%);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .wc-default::after {
+      content: ""; position: absolute; top: 6px; right: 7px;
+      width: 6px; height: 6px; background: #f0c14b; border-radius: 50%; opacity: .85;
+    }
+    .wallet-crest:hover .wc-default { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(139,31,48,0.12); }
+    /* logged-in: deterministic avatar */
+    .wc-avatar {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--paper-soft);
+      box-shadow: inset 0 0 0 2px var(--paper);
+      display: none;
+    }
+    .wc-dot {
+      position: absolute; right: -1px; bottom: -1px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #2f6b3f; border: 2px solid var(--paper);
+      display: none;
+    }
+    .wallet-crest.on .wc-default { display: none; }
+    .wallet-crest.on .wc-avatar { display: block; }
+    .wallet-crest.on .wc-dot { display: block; }
+    .wallet-crest.on:hover .wc-avatar { box-shadow: inset 0 0 0 2px var(--paper), 0 0 0 4px rgba(47,107,63,0.16); }
+
+    /* Wallet popover */
+    .wallet-pop {
+      position: absolute; top: calc(100% + 8px); right: 28px; z-index: 65;
+      width: 248px;
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; box-shadow: 0 18px 44px rgba(20,18,15,0.16);
+      padding: 7px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .wallet-pop.open { opacity: 1; transform: none; pointer-events: auto; }
+    .wp-state { padding: 12px 12px 4px; }
+    .wp-row { display: flex; align-items: center; gap: 11px; }
+    .wp-av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: var(--paper-soft); }
+    .wp-meta { min-width: 0; }
+    .wp-meta .wp-l1 { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .wp-meta .wp-l2 {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute);
+      margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .wp-net {
+      display: inline-flex; align-items: center; gap: 6px; margin: 12px 0 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-soft);
+    }
+    .wp-net .gdot { width: 6px; height: 6px; border-radius: 50%; background: #2f6b3f; }
+    .wp-actions { padding: 6px; border-top: 0.5px solid var(--line-soft); margin-top: 8px; }
+    .wp-btn {
+      width: 100%; text-align: left; border: none; background: transparent;
+      border-radius: 9px; padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--ink);
+      transition: background .12s; cursor: pointer;
+    }
+    .wp-btn:hover { background: var(--paper-soft); }
+    .wp-btn.danger { color: var(--crimson); }
+    .wp-connect { padding: 14px 12px 8px; }
+    .wp-connect .wp-ttl { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+    .wp-connect .wp-sub { font-size: 12px; color: var(--ink-mute); margin: 0 0 12px; line-height: 1.5; }
+    .wp-connect .wp-cta {
+      width: 100%; background: var(--ink); color: var(--paper); border: none;
+      border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .wp-connect .wp-cta:hover { background: var(--crimson); }
+    .mast-right { display: flex; align-items: center; gap: 14px; }
+    .menu-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 0.5px solid var(--line); background: var(--paper-card);
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: border-color .15s;
+    }
+    .menu-btn:hover { border-color: var(--ink); }
+    .menu-btn .bars, .menu-btn .bars::before, .menu-btn .bars::after {
+      display: block; width: 16px; height: 1.5px; background: var(--ink);
+      border-radius: 2px; transition: transform .2s, opacity .2s, background .2s;
+    }
+    .menu-btn .bars { position: relative; }
+    .menu-btn .bars::before { content: ""; position: absolute; top: -5px; left: 0; }
+    .menu-btn .bars::after { content: ""; position: absolute; top: 5px; left: 0; }
+    .menu-btn.open .bars { background: transparent; }
+    .menu-btn.open .bars::before { transform: translateY(5px) rotate(45deg); }
+    .menu-btn.open .bars::after { transform: translateY(-5px) rotate(-45deg); }
+    .menu-panel {
+      position: absolute; top: calc(100% + 8px); right: 28px; z-index: 60;
+      width: 234px;
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; box-shadow: 0 18px 44px rgba(20,18,15,0.16);
+      padding: 7px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .menu-panel.open { opacity: 1; transform: none; pointer-events: auto; }
+    .menu-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute);
+      padding: 9px 12px 7px;
+    }
+    .menu-panel a {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 12px; border-radius: 9px;
+      color: var(--ink); transition: background .12s;
+    }
+    .menu-panel a:hover { background: var(--paper-soft); }
+    .menu-panel a.here { background: var(--paper-soft); }
+    .menu-panel a .mtxt { display: flex; flex-direction: column; }
+    .menu-panel a .mt { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+    .menu-panel a .msub { font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+    .menu-panel a .ar { color: var(--ink-mute); font-size: 14px; flex-shrink: 0; }
+    .menu-panel a:hover .ar { color: var(--crimson); }
+
+    /* ─── PAGE ─── */
+    main { max-width: 880px; margin: 0 auto; padding: 56px 28px 0; }
+    @media (max-width: 600px) { main { padding: 34px 20px 0; } }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--crimson); margin: 0 0 16px;
+    }
+    .display {
+      font-weight: 800;
+      font-size: clamp(32px, 5vw, 50px);
+      line-height: 1.06; letter-spacing: -0.028em;
+      margin: 0; max-width: 16ch;
+    }
+    .display em { font-style: italic; font-weight: 900; }
+    .lede {
+      margin: 20px 0 0; max-width: 58ch;
+      font-size: 16px; line-height: 1.62; color: var(--ink-soft);
+    }
+
+    /* ─── LOOP DIAGRAM ─── */
+    .loop {
+      margin: 48px 0 0;
+      background: var(--charcoal);
+      border-radius: 18px;
+      padding: 34px 30px 30px;
+      color: #d6cfc1;
+      position: relative;
+    }
+    .loop-lbl {
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: #8f857a;
+      margin: 0 0 22px;
+    }
+    .loop-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: stretch; gap: 0;
+    }
+    .node {
+      position: relative;
+      background: var(--charcoal-2, #2a2620);
+      border: 0.5px solid #383229;
+      border-radius: 14px;
+      padding: 20px 18px 18px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .node .nstep {
+      position: absolute; top: -11px; left: 18px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--crimson); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+      border: 3px solid var(--charcoal);
+    }
+    .node.payer .nstep { background: var(--ok); }
+    .node .nhead { display: flex; align-items: center; gap: 11px; margin-top: 4px; }
+    .node .nico {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 17px;
+      background: rgba(210,155,162,0.14); color: var(--crimson-on-dark);
+    }
+    .node.payer .nico { background: rgba(127,191,142,0.14); color: #7fbf8e; }
+    .node .nt { font-size: 15px; font-weight: 700; color: #f0e9dc; letter-spacing: -0.01em; }
+    .node .ntag {
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+      color: #8f857a; margin-top: 2px;
+    }
+    .node .ndesc { font-size: 12.5px; line-height: 1.58; color: #b3a99b; margin: 0; }
+    .node .nchip {
+      align-self: flex-start; margin-top: auto;
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+      background: rgba(255,255,255,0.05); border: 0.5px solid #383229;
+      border-radius: 999px; padding: 4px 10px; color: #d6cfc1;
+    }
+    .node .nchip b { color: var(--crimson-on-dark); font-weight: 600; }
+    .node.payer .nchip b { color: #7fbf8e; }
+
+    .arrow {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0 18px; min-width: 124px; gap: 10px;
+    }
+    .arrow .alab {
+      display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+      background: rgba(255,255,255,0.05);
+      border: 0.5px solid #3f3930;
+      border-radius: 9px;
+      padding: 7px 12px;
+      text-align: center; white-space: nowrap;
+    }
+    .arrow .alab .at {
+      font-size: 11px; font-weight: 600; color: #f0e9dc; letter-spacing: -0.005em;
+    }
+    .arrow .alab .ac {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--crimson-on-dark);
+    }
+    .arrow.pay .alab .ac { color: #7fbf8e; }
+    .arrow .line {
+      width: 100%; height: 2px; border-radius: 2px;
+      background: linear-gradient(90deg, #4a4339, #7a6f60);
+      position: relative;
+    }
+    .arrow .line::after {
+      content: ""; position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
+      border-left: 8px solid #7a6f60; border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    }
+
+    /* settlement back-arrow */
+    .settle {
+      margin-top: 22px; padding-top: 20px; border-top: 0.5px solid #312c27;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .settle .sico {
+      width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(127,191,142,0.14); color: #7fbf8e;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 15px;
+    }
+    .settle .stext { font-size: 13px; line-height: 1.5; color: #b3a99b; }
+    .settle .stext b { color: #f0e9dc; font-weight: 600; }
+    .settle .smono { font-family: 'JetBrains Mono', monospace; color: var(--crimson-on-dark); }
+
+    @media (max-width: 740px) {
+      .loop-grid { grid-template-columns: 1fr; gap: 0; }
+      .arrow { flex-direction: column; min-width: 0; width: 100%; padding: 14px 0; gap: 8px; }
+      .arrow .line {
+        width: 2px; height: 32px;
+        background: linear-gradient(180deg, #4a4339, #7a6f60);
+      }
+      .arrow .line::after {
+        right: 50%; top: auto; bottom: -2px; transform: translateX(50%);
+        border-left: 5px solid transparent; border-right: 5px solid transparent;
+        border-top: 8px solid #7a6f60; border-bottom: none;
+      }
+    }
+
+    /* ─── STEPS ─── */
+    .steps-head { margin: 64px 0 8px; }
+    .steps-head h2 {
+      font-size: clamp(22px, 3vw, 28px); font-weight: 800;
+      letter-spacing: -0.02em; margin: 0;
+    }
+    .steps-head p { margin: 8px 0 0; color: var(--ink-soft); font-size: 14.5px; max-width: 54ch; }
+
+    .step {
+      display: grid; grid-template-columns: 64px 1fr; gap: 4px 24px;
+      padding: 30px 0;
+      border-bottom: 0.5px solid var(--line);
+    }
+    .step:last-of-type { border-bottom: none; }
+    .step-num {
+      grid-row: 1 / span 3;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; font-weight: 600; color: var(--crimson);
+      padding-top: 4px;
+    }
+    .step-num .who {
+      display: block; margin-top: 8px; font-size: 9.5px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--ink-mute); font-weight: 500;
+    }
+    .step h3 {
+      margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.015em;
+      color: var(--ink); text-wrap: pretty;
+    }
+    .step p { margin: 9px 0 0; font-size: 14px; line-height: 1.62; color: var(--ink-soft); max-width: 60ch; }
+    .step .step-meta {
+      margin: 14px 0 0; display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .step .smeta {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+      color: var(--ink-soft);
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 999px; padding: 5px 12px;
+    }
+    .step .smeta .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--crimson); flex-shrink: 0; }
+    .step .smeta.ok .dot { background: var(--ok); }
+    .step .smeta b { color: var(--ink); font-weight: 600; }
+    .step .step-link {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
+      font-size: 13px; font-weight: 600; color: var(--crimson);
+    }
+    .step .step-link:hover { gap: 9px; }
+    @media (max-width: 540px) {
+      .step { grid-template-columns: 1fr; gap: 0; }
+      .step-num { grid-row: auto; margin-bottom: 10px; }
+      .step-num .who { display: inline; margin: 0 0 0 10px; }
+    }
+
+    /* ─── TRUST / WHY ON-CHAIN ─── */
+    .why { margin: 64px 0 0; }
+    .why h2 {
+      font-size: clamp(22px, 3vw, 28px); font-weight: 800;
+      letter-spacing: -0.02em; margin: 0 0 22px;
+    }
+    .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 700px) { .why-grid { grid-template-columns: 1fr; } }
+    .why-card {
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; padding: 20px 20px 22px;
+    }
+    .why-card .wico {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: var(--paper-soft); border: 0.5px solid var(--line);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 17px; color: var(--crimson); margin-bottom: 14px;
+    }
+    .why-card h3 { margin: 0 0 7px; font-size: 15.5px; font-weight: 700; letter-spacing: -0.01em; }
+    .why-card p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink-soft); }
+    .why-card .wlink {
+      display: inline-block; margin-top: 12px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-mute);
+    }
+    .why-card .wlink:hover { color: var(--crimson); }
+
+    /* ─── CTA ─── */
+    .cta {
+      margin: 56px 0 0;
+      background: var(--charcoal); border-radius: 18px;
+      padding: 40px 36px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      flex-wrap: wrap;
+    }
+    .cta .ct { color: #f0e9dc; }
+    .cta .ct h2 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+    .cta .ct p { margin: 8px 0 0; color: #b3a99b; font-size: 14px; max-width: 42ch; }
+    .cta-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .cta-actions a {
+      padding: 13px 22px; border-radius: 11px; font-size: 14px; font-weight: 700;
+      transition: all 0.15s;
+    }
+    .cta-actions .primary { background: var(--paper); color: var(--ink); }
+    .cta-actions .primary:hover { background: var(--crimson); color: #fff; }
+    .cta-actions .ghost { border: 0.5px solid #4a4339; color: #d6cfc1; }
+    .cta-actions .ghost:hover { border-color: var(--crimson-on-dark); color: #fff; }
+
+    /* ─── FOOTER ─── */
+    .foot {
+      border-top: 0.5px solid var(--line);
+      margin-top: 70px; padding: 22px 0 40px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--ink-mute); letter-spacing: 0.02em;
+    }
+    .foot-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    }
+    .foot-inner a:hover { color: var(--crimson); }
+    .foot-l { display: flex; gap: 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+
+  <!-- ─── MASTHEAD ─── -->
+  <header class="mast">
+    <div class="mast-row">
+      <a href="01-home.html" class="brand"><span class="mark"></span>Web3Law</a>
+      <div class="mast-right">
+        <button class="wallet-crest" id="walletCrest" aria-label="连接钱包" aria-expanded="false">
+          <span class="wc-default"></span>
+          <span class="wc-avatar" id="wcAvatar"></span>
+          <span class="wc-dot"></span>
+        </button>
+        <button class="menu-btn" id="menuBtn" aria-label="菜单" aria-expanded="false"><span class="bars"></span></button>
+      </div>
+      <nav class="menu-panel" id="menuPanel" aria-label="站点导航">
+        <div class="menu-eyebrow">Web3Law</div>
+        <a href="publish.html"><span class="mtxt"><span class="mt">发布报告</span><span class="msub">签名上链你的文章</span></span><span class="ar">→</span></a>
+        <a href="reports.html"><span class="mtxt"><span class="mt">报告目录</span><span class="msub">链上可验证内容库</span></span><span class="ar">→</span></a>
+        <a href="how-it-works.html" class="here"><span class="mtxt"><span class="mt">How it works</span><span class="msub">三方付费闭环</span></span><span class="ar">→</span></a>
+      </nav>
+      <div class="wallet-pop" id="walletPop"></div>
+    </div>
+  </header>
+
+  <!-- ─── MAIN ─── -->
+  <main data-screen-label="How it works">
+    <p class="eyebrow">How it works · 三方付费闭环</p>
+    <h1 class="display">一篇报告,<em>三方付费</em>,款项<em>全程直达作者</em>。</h1>
+    <p class="lede">合规作者把文章签名上链;真人和 AI Agent 用同一个价格付费解锁同一篇报告。没有平台抽成、没有 API key、没有对账纠纷 —— 谁是作者、内容是否被改、付了多少,全部写在 Base 上,任何人可验证。</p>
+
+    <!-- LOOP DIAGRAM -->
+    <div class="loop">
+      <p class="loop-lbl">The loop · Base Sepolia</p>
+      <div class="loop-grid">
+        <!-- Author -->
+        <div class="node author">
+          <span class="nstep">1</span>
+          <div class="nhead">
+            <span class="nico">✍</span>
+            <div><div class="nt">作者</div><div class="ntag">@cryptolaw_cn</div></div>
+          </div>
+          <p class="ndesc">导入文章、自己定价,用钱包签名写入一条 EAS 存证。</p>
+          <span class="nchip">EAS <b>attest</b></span>
+        </div>
+
+        <!-- arrow -->
+        <div class="arrow">
+          <span class="alab"><span class="at">签名上链</span><span class="ac">contentHash + price</span></span>
+          <span class="line"></span>
+        </div>
+
+        <!-- Catalog -->
+        <div class="node catalog">
+          <span class="nstep">2</span>
+          <div class="nhead">
+            <span class="nico">▤</span>
+            <div><div class="nt">报告目录</div><div class="ntag">/reports</div></div>
+          </div>
+          <p class="ndesc">存证一上链,报告自动进目录,带 on-chain ✓ 徽章可验证。</p>
+          <span class="nchip">EAS <b>GraphQL</b></span>
+        </div>
+
+        <!-- arrow -->
+        <div class="arrow pay">
+          <span class="alab"><span class="at">付费解锁 · 同价</span><span class="ac">x402 · USDC</span></span>
+          <span class="line"></span>
+        </div>
+
+        <!-- Payers -->
+        <div class="node payer">
+          <span class="nstep">3</span>
+          <div class="nhead">
+            <span class="nico">⇄</span>
+            <div><div class="nt">真人 + Agent</div><div class="ntag">x402 / MCP</div></div>
+          </div>
+          <p class="ndesc">真人点 Unlock、Agent 走 402→pay→200,USDC 即时结算。</p>
+          <span class="nchip">USDC <b>on Base</b></span>
+        </div>
+      </div>
+
+      <!-- settlement back to author -->
+      <div class="settle">
+        <span class="sico">↩</span>
+        <div class="stext"><b>每一笔都直付作者钱包</b> —— 平台 <span class="smono">0%</span> 抽成,结算实时上链,可在 basescan 验证。收益变化即刻反映到首页 Top Earning Authors 榜单。</div>
+      </div>
+    </div>
+
+    <!-- STEPS -->
+    <div class="steps-head">
+      <h2>完整生命周期,五步走</h2>
+      <p>从一篇文章被签名,到真人和 Agent 各自付费、作者看见收益上涨 —— 每一步都链上可验证。</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">01<span class="who">作者</span></div>
+      <div>
+        <h3>签名上链</h3>
+        <p>作者从首页导入公众号 / Mirror / Substack 文章,确认标题、标签、作者地址并自己设定价格。前端算出 <code>contentHash = keccak256(正文)</code>,作者点 "Sign + Attest",钱包签名把一条 EAS 存证写入 Base,返回 attestation UID 与 tx hash。</p>
+        <div class="step-meta">
+          <span class="smeta"><span class="dot"></span>schema: <b>contentHash, author, priceUSDC, slug, title</b></span>
+          <span class="smeta"><span class="dot"></span>recipient = author · revocable</span>
+        </div>
+        <a href="publish.html" class="step-link">去 /publish 走一遍 →</a>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02<span class="who">目录</span></div>
+      <div>
+        <h3>报告进目录</h3>
+        <p>站点读取存证索引,对每个 UID 调 EAS GraphQL 拉取 attester、时间戳和撤销状态,与本地 MDX frontmatter 双源对账后渲染。每张卡片右上角带 "on-chain ✓ · EAS:0x…" 徽章,hover 直跳 EAS Explorer 验证。</p>
+        <div class="step-meta">
+          <span class="smeta"><span class="dot"></span>source: <b>EAS GraphQL + 本地索引</b></span>
+          <span class="smeta"><span class="dot"></span>降级:超时则徽章变灰显 "indexing…"</span>
+        </div>
+        <a href="reports.html" class="step-link">看 /reports 目录 →</a>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03<span class="who">真人读者</span></div>
+      <div>
+        <h3>真人 x402 付费</h3>
+        <p>读者打开报告页,先看到约 24% 的预览和 paywall。点 "Unlock",钱包发一笔 USDC,全文立即出现并<b>永久可读</b> —— 同一钱包重访不再付费。整笔结算通过 x402 在 Base 上完成。</p>
+        <div class="step-meta">
+          <span class="smeta ok"><span class="dot"></span>x402 on Base · <b>USDC</b></span>
+          <span class="smeta ok"><span class="dot"></span>付一次永久解锁</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04<span class="who">Agent</span></div>
+      <div>
+        <h3>Agent 付费调用</h3>
+        <p>AI Agent 通过 AgentCash MCP 调用同一篇报告的付费 API:<code>GET</code> 返回 <code>402 Payment Required</code>,Agent 自动付款后重试拿到 <code>200</code> 全文。和真人<b>完全同价</b>,无需 API key、无需人工协同。</p>
+        <div class="step-meta">
+          <span class="smeta ok"><span class="dot"></span>402 → pay → <b>200</b></span>
+          <span class="smeta ok"><span class="dot"></span>真人 / Agent <b>同价</b></span>
+        </div>
+        <a href="01-home.html" class="step-link">查看 For Agents 接入 →</a>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">05<span class="who">作者</span></div>
+      <div>
+        <h3>收益可见</h3>
+        <p>真人付费和 Agent 付费两笔款项直达作者钱包后,刷新首页 For Writers 的 Top Earning Authors 榜单,该作者那行的 EARNED 数字即刻上升 —— 增量正好等于价格 × 2,且每一笔都能在 basescan 上对到链上交易。</p>
+        <div class="step-meta">
+          <span class="smeta ok"><span class="dot"></span>结算:<b>实时 · 直付钱包</b></span>
+          <span class="smeta ok"><span class="dot"></span>平台抽成 <b>0%</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHY ON-CHAIN -->
+    <div class="why">
+      <h2>为什么要上链</h2>
+      <div class="why-grid">
+        <div class="why-card">
+          <span class="wico">⛨</span>
+          <h3>出处可证</h3>
+          <p>contentHash 在服务端重算比对,attester 必须等于 frontmatter 里的作者地址。文章被篡改或冒名,直接拒绝上索引。</p>
+          <span class="wlink">keccak256 · EAS attester</span>
+        </div>
+        <div class="why-card">
+          <span class="wico">⇄</span>
+          <h3>真人 Agent 同价</h3>
+          <p>价格由作者写在链上,真人 x402 和 Agent MCP 读到的是同一个数字。没有歧视性定价,也没有隐藏的平台加价。</p>
+          <span class="wlink">priceUSDC · uint96</span>
+        </div>
+        <div class="why-card">
+          <span class="wico">↩</span>
+          <h3>0 抽成直付</h3>
+          <p>每笔付费通过 x402 实时结算到作者钱包,平台不碰钱、不做中间账户。链上可查,无需信任对账。</p>
+          <span class="wlink">x402 · basescan</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta">
+      <div class="ct">
+        <h2>把你的第一篇报告上链</h2>
+        <p>导入一篇文章,自己定价,一次签名就进目录 —— 真人和 Agent 立刻能付费阅读。</p>
+      </div>
+      <div class="cta-actions">
+        <a href="publish.html" class="primary">发布报告 →</a>
+        <a href="reports.html" class="ghost">浏览目录</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="foot">
+    <div class="foot-inner">
+      <div class="foot-l">
+        <a href="01-home.html">home</a>
+        <a href="reports.html">reports</a>
+        <a href="publish.html">publish</a>
+        <a href="how-it-works.html">how it works</a>
+      </div>
+      <span>EAS + x402 on Base · 0% platform fee</span>
+    </div>
+  </footer>
+
+  <script>
+    // ── Hamburger menu ──
+    (function () {
+      const mb = document.getElementById('menuBtn');
+      const mp = document.getElementById('menuPanel');
+      if (!mb || !mp) return;
+      function closeMenu() { mp.classList.remove('open'); mb.classList.remove('open'); mb.setAttribute('aria-expanded', 'false'); }
+      mb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = mp.classList.toggle('open');
+        mb.classList.toggle('open', open);
+        mb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', (e) => { if (!mp.contains(e.target) && !mb.contains(e.target)) closeMenu(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    })();
+
+    // ── Wallet login crest ──
+    (function () {
+      const KEY = 'web3law_wallet';
+      const DEMO = '0x7C3aE9d4b18F206c8B9b4c5e2D1a3F7e90C4bA2f';
+      const crest = document.getElementById('walletCrest');
+      const pop = document.getElementById('walletPop');
+      const avatar = document.getElementById('wcAvatar');
+      if (!crest || !pop) return;
+      const short = a => a.slice(0,6) + '…' + a.slice(-4);
+      function gradient(a){
+        const h1 = parseInt(a.slice(2,5),16)%360, h2 = parseInt(a.slice(6,9),16)%360, h3 = parseInt(a.slice(10,13),16)%360;
+        return 'conic-gradient(from 30deg, hsl('+h1+' 58% 52%), hsl('+h2+' 62% 44%), hsl('+h3+' 56% 56%), hsl('+h1+' 58% 52%))';
+      }
+      function render(){
+        const addr = localStorage.getItem(KEY);
+        if (addr) {
+          crest.classList.add('on');
+          crest.setAttribute('aria-label', '账户 ' + short(addr));
+          avatar.style.background = gradient(addr);
+          pop.innerHTML =
+            '<div class="wp-state"><div class="wp-row"><span class="wp-av" style="background:'+gradient(addr)+'"></span>'+
+            '<div class="wp-meta"><div class="wp-l1">已连接</div><div class="wp-l2">'+addr+'</div></div></div>'+
+            '<div class="wp-net"><span class="gdot"></span>Base Sepolia · 已验证</div></div>'+
+            '<div class="wp-actions"><button class="wp-btn" data-act="copy">复制地址</button>'+
+            '<button class="wp-btn danger" data-act="disconnect">断开连接</button></div>';
+        } else {
+          crest.classList.remove('on');
+          crest.setAttribute('aria-label', '连接钱包');
+          pop.innerHTML =
+            '<div class="wp-connect"><p class="wp-ttl">连接钱包</p>'+
+            '<p class="wp-sub">连接后即可签名发布、付费解锁,头像将变为你的链上身份。</p>'+
+            '<button class="wp-cta" data-act="connect">连接钱包</button></div>';
+        }
+      }
+      function close(){ pop.classList.remove('open'); crest.setAttribute('aria-expanded','false'); }
+      crest.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const mp = document.getElementById('menuPanel'), mb = document.getElementById('menuBtn');
+        if (mp) mp.classList.remove('open');
+        if (mb) { mb.classList.remove('open'); mb.setAttribute('aria-expanded','false'); }
+        const open = pop.classList.toggle('open');
+        crest.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      pop.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-act]'); if (!b) return;
+        const act = b.dataset.act;
+        if (act === 'connect') { localStorage.setItem(KEY, DEMO); render(); }
+        else if (act === 'disconnect') { localStorage.removeItem(KEY); render(); close(); }
+        else if (act === 'copy') {
+          if (navigator.clipboard) navigator.clipboard.writeText(localStorage.getItem(KEY) || '');
+          b.textContent = '已复制'; setTimeout(() => { b.textContent = '复制地址'; }, 1300);
+        }
+      });
+      document.addEventListener('click', (e) => { if (!pop.contains(e.target) && !crest.contains(e.target)) close(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      render();
+    })();
+  </script>
+</body>
+</html>

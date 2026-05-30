@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>发布 · 签名上链 — Web3Law</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500;1,700;1,800;1,900&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ============================================================
+       Web3Law · /publish — author signs a report on-chain (EAS).
+       Same design tokens as 01-home.html.
+       ============================================================ */
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --paper:      #f3f0e9;
+      --paper-soft: #ece8df;
+      --paper-card: #fffdf8;
+      --ink:        #1a1714;
+      --ink-soft:   #4a4339;
+      --ink-mute:   #8a8278;
+      --line:       #d9d2c5;
+      --line-soft:  #e6e0d4;
+      --charcoal:   #1e1b18;
+      --charcoal-2: #2a2620;
+      --crimson:    #8B1F30;
+      --crimson-hi: #A83245;
+      --crimson-on-dark: #d29ba2;
+      --ok:         #2f6b3f;
+      --ok-on-dark: #7fbf8e;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      font-feature-settings: "tnum" 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    ::selection { background: var(--crimson); color: #fff; }
+    em { font-style: italic; }
+    code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ─── MASTHEAD ─── */
+    .mast {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(243, 240, 233, 0.92);
+      backdrop-filter: saturate(160%) blur(10px);
+      -webkit-backdrop-filter: saturate(160%) blur(10px);
+      border-bottom: 0.5px solid var(--line);
+    }
+    .mast-row {
+      max-width: 1080px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px; padding: 0 28px;
+    }
+    .brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15.5px; letter-spacing: -0.01em;
+    }
+    .brand .mark {
+      width: 22px; height: 22px; background: var(--ink);
+      border-radius: 5px; position: relative; flex-shrink: 0;
+    }
+    .brand .mark::after {
+      content: ""; position: absolute; inset: 5px 6px;
+      border: 1.5px solid var(--paper); border-radius: 2px;
+    }
+    .brand .mark::before {
+      content: ""; position: absolute; top: 4px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 5px;
+      border: 1.5px solid var(--paper); border-bottom: none;
+      border-radius: 3px 3px 0 0;
+    }
+    /* Wallet-login crest */
+    .wallet-crest {
+      position: relative; flex-shrink: 0;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: transparent; padding: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    /* logged-out: default brand seal */
+    .wc-default {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--crimson-hi) 0%, var(--crimson) 60%, #4a1a22 100%);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .wc-default::after {
+      content: ""; position: absolute; top: 6px; right: 7px;
+      width: 6px; height: 6px; background: #f0c14b; border-radius: 50%; opacity: .85;
+    }
+    .wallet-crest:hover .wc-default { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(139,31,48,0.12); }
+    /* logged-in: deterministic avatar */
+    .wc-avatar {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--paper-soft);
+      box-shadow: inset 0 0 0 2px var(--paper);
+      display: none;
+    }
+    .wc-dot {
+      position: absolute; right: -1px; bottom: -1px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #2f6b3f; border: 2px solid var(--paper);
+      display: none;
+    }
+    .wallet-crest.on .wc-default { display: none; }
+    .wallet-crest.on .wc-avatar { display: block; }
+    .wallet-crest.on .wc-dot { display: block; }
+    .wallet-crest.on:hover .wc-avatar { box-shadow: inset 0 0 0 2px var(--paper), 0 0 0 4px rgba(47,107,63,0.16); }
+
+    /* Wallet popover */
+    .wallet-pop {
+      position: absolute; top: calc(100% + 8px); right: 28px; z-index: 65;
+      width: 248px;
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; box-shadow: 0 18px 44px rgba(20,18,15,0.16);
+      padding: 7px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .wallet-pop.open { opacity: 1; transform: none; pointer-events: auto; }
+    .wp-state { padding: 12px 12px 4px; }
+    .wp-row { display: flex; align-items: center; gap: 11px; }
+    .wp-av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: var(--paper-soft); }
+    .wp-meta { min-width: 0; }
+    .wp-meta .wp-l1 { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .wp-meta .wp-l2 {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute);
+      margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .wp-net {
+      display: inline-flex; align-items: center; gap: 6px; margin: 12px 0 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-soft);
+    }
+    .wp-net .gdot { width: 6px; height: 6px; border-radius: 50%; background: #2f6b3f; }
+    .wp-actions { padding: 6px; border-top: 0.5px solid var(--line-soft); margin-top: 8px; }
+    .wp-btn {
+      width: 100%; text-align: left; border: none; background: transparent;
+      border-radius: 9px; padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--ink);
+      transition: background .12s; cursor: pointer;
+    }
+    .wp-btn:hover { background: var(--paper-soft); }
+    .wp-btn.danger { color: var(--crimson); }
+    .wp-connect { padding: 14px 12px 8px; }
+    .wp-connect .wp-ttl { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+    .wp-connect .wp-sub { font-size: 12px; color: var(--ink-mute); margin: 0 0 12px; line-height: 1.5; }
+    .wp-connect .wp-cta {
+      width: 100%; background: var(--ink); color: var(--paper); border: none;
+      border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .wp-connect .wp-cta:hover { background: var(--crimson); }
+
+    /* Hamburger menu */
+    .mast-row { position: relative; }
+    .mast-right { display: flex; align-items: center; gap: 14px; }
+    .menu-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 0.5px solid var(--line); background: var(--paper-card);
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: border-color .15s;
+    }
+    .menu-btn:hover { border-color: var(--ink); }
+    .menu-btn .bars, .menu-btn .bars::before, .menu-btn .bars::after {
+      display: block; width: 16px; height: 1.5px; background: var(--ink);
+      border-radius: 2px; transition: transform .2s, opacity .2s, background .2s;
+    }
+    .menu-btn .bars { position: relative; }
+    .menu-btn .bars::before { content: ""; position: absolute; top: -5px; left: 0; }
+    .menu-btn .bars::after { content: ""; position: absolute; top: 5px; left: 0; }
+    .menu-btn.open .bars { background: transparent; }
+    .menu-btn.open .bars::before { transform: translateY(5px) rotate(45deg); }
+    .menu-btn.open .bars::after { transform: translateY(-5px) rotate(-45deg); }
+    .menu-panel {
+      position: absolute; top: calc(100% + 8px); right: 28px; z-index: 60;
+      width: 234px;
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; box-shadow: 0 18px 44px rgba(20,18,15,0.16);
+      padding: 7px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .menu-panel.open { opacity: 1; transform: none; pointer-events: auto; }
+    .menu-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute);
+      padding: 9px 12px 7px;
+    }
+    .menu-panel a {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 12px; border-radius: 9px;
+      color: var(--ink); transition: background .12s;
+    }
+    .menu-panel a:hover { background: var(--paper-soft); }
+    .menu-panel a .mtxt { display: flex; flex-direction: column; }
+    .menu-panel a .mt { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+    .menu-panel a .msub { font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+    .menu-panel a .ar { color: var(--ink-mute); font-size: 14px; flex-shrink: 0; }
+    .menu-panel a:hover .ar { color: var(--crimson); }
+
+    /* ─── PAGE ─── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 52px 28px 110px;
+    }
+    @media (max-width: 600px) { main { padding: 32px 20px 72px; } }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--crimson);
+      margin: 0 0 16px;
+    }
+    .display {
+      font-weight: 800;
+      font-size: clamp(30px, 4.6vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      margin: 0;
+      max-width: 18ch;
+    }
+    .display em { font-style: italic; font-weight: 900; }
+    .sub {
+      margin: 18px 0 0;
+      max-width: 54ch;
+      font-size: 14.5px; line-height: 1.62;
+      color: var(--ink-soft);
+    }
+
+    /* ─── Wallet bar ─── */
+    .wallet-bar {
+      margin: 34px 0 0;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px;
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+    .wallet-l { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .wallet-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--ink-mute); flex-shrink: 0;
+    }
+    .wallet-dot.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(47,107,63,0.14); }
+    .wallet-text { min-width: 0; }
+    .wallet-text .l1 { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .wallet-text .l2 {
+      font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+      color: var(--ink-mute); margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .net-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--ink-soft);
+      background: var(--paper-soft);
+      border: 0.5px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 11px;
+      white-space: nowrap;
+    }
+    .net-badge b { color: var(--crimson); font-weight: 600; }
+    .btn-wallet {
+      background: var(--ink); color: var(--paper);
+      border: none; border-radius: 999px;
+      padding: 9px 18px;
+      font-size: 13px; font-weight: 600;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .btn-wallet:hover { background: var(--crimson); }
+
+    /* ─── Step label ─── */
+    .step {
+      display: flex; align-items: baseline; gap: 10px;
+      margin: 48px 0 14px;
+    }
+    .step .num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--crimson);
+      border: 0.5px solid var(--crimson);
+      border-radius: 999px;
+      padding: 2px 9px;
+      line-height: 1.4;
+    }
+    .step h2 {
+      margin: 0; font-size: 15px; font-weight: 700;
+      letter-spacing: -0.01em; color: var(--ink);
+    }
+    .step .hint { font-size: 12.5px; color: var(--ink-mute); margin-left: auto; }
+
+    /* ─── Article review card ─── */
+    .review {
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .review-top { padding: 22px 22px 20px; }
+    .review-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+    .tag {
+      font-size: 11.5px; font-weight: 500;
+      border-radius: 999px; padding: 3px 11px;
+      background: var(--paper-soft);
+      border: 0.5px solid var(--line);
+      color: var(--ink-soft);
+    }
+    .tag.cat { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+    .review h3 {
+      margin: 0; font-size: 21px; font-weight: 800; line-height: 1.28;
+      letter-spacing: -0.015em; color: var(--ink);
+    }
+    .review .summary {
+      margin: 12px 0 0; font-size: 13.5px; line-height: 1.62;
+      color: var(--ink-soft); max-width: 60ch;
+    }
+    .review-meta {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-top: 0.5px solid var(--line);
+    }
+    @media (max-width: 540px) { .review-meta { grid-template-columns: 1fr 1fr; } }
+    .rm-cell {
+      padding: 13px 18px;
+      border-right: 0.5px solid var(--line);
+    }
+    .rm-cell:nth-child(4n) { border-right: none; }
+    @media (max-width: 540px) {
+      .rm-cell:nth-child(2n) { border-right: none; }
+      .rm-cell:nth-child(-n+2) { border-bottom: 0.5px solid var(--line); }
+    }
+    .rm-cell .k {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-mute); margin-bottom: 4px;
+    }
+    .rm-cell .v {
+      font-size: 14px; font-weight: 600; color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .rm-cell .v.acc { color: var(--crimson); font-family: 'JetBrains Mono', monospace; font-size: 13.5px; }
+
+    /* ─── Imported source strip ─── */
+    .import-strip {
+      margin: 30px 0 0;
+      display: flex; align-items: center; gap: 14px;
+      background: var(--charcoal);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #d6cfc1;
+    }
+    .import-strip .is-ico {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: rgba(210,155,162,0.16);
+      color: var(--crimson-on-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .import-strip .is-text { min-width: 0; flex: 1; }
+    .import-strip .is-l1 { font-size: 12.5px; font-weight: 600; color: #e8dccd; }
+    .import-strip .is-l2 {
+      font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+      color: #8f857a; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .import-strip .is-edit {
+      font-size: 12px; font-weight: 500; color: var(--crimson-on-dark);
+      border: 0.5px solid #3a3530; border-radius: 999px;
+      padding: 6px 13px; white-space: nowrap; transition: all 0.15s;
+    }
+    .import-strip .is-edit:hover { border-color: var(--crimson-on-dark); color: #fff; }
+
+    /* author byline inside review card */
+    .review-byline {
+      display: inline-flex; align-items: center; gap: 9px;
+      margin: 14px 0 0; font-size: 13px; color: var(--ink-soft);
+    }
+    .review-byline .av {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--crimson); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 12px; flex-shrink: 0;
+    }
+    .review-byline b { font-weight: 600; color: var(--ink); }
+    .review-byline .plat { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); }
+
+    /* ─── Price setter ─── */
+    .price-set {
+      display: grid; grid-template-columns: auto 1fr; gap: 22px;
+      align-items: center;
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 12px;
+      padding: 20px 22px;
+    }
+    @media (max-width: 540px) { .price-set { grid-template-columns: 1fr; gap: 16px; } }
+    .price-field {
+      display: inline-flex; align-items: baseline;
+      border: 0.5px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      padding: 12px 16px;
+      transition: border-color 0.15s;
+    }
+    .price-field:focus-within { border-color: var(--crimson); }
+    .price-field .cur { font-size: 24px; font-weight: 700; color: var(--ink-mute); }
+    .price-field input {
+      border: none; outline: none; background: transparent;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--ink); width: 4.2ch; padding: 0 2px;
+    }
+    .price-field .per { font-size: 13px; color: var(--ink-mute); margin-left: 4px; }
+    .price-side { min-width: 0; }
+    .ps-conv {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-soft);
+    }
+    .ps-conv code { color: var(--crimson); font-weight: 600; }
+    .ps-conv span { color: var(--ink-mute); }
+    .ps-presets { display: flex; gap: 7px; flex-wrap: wrap; margin: 12px 0 0; }
+    .ps-presets button {
+      background: var(--paper-soft); border: 0.5px solid var(--line);
+      border-radius: 999px; padding: 5px 13px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-soft);
+      transition: all 0.15s;
+    }
+    .ps-presets button:hover { border-color: var(--crimson); color: var(--crimson); }
+    .ps-presets button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .ps-note { font-size: 11.5px; color: var(--ink-mute); margin: 12px 0 0; line-height: 1.5; }
+
+    /* contentHash strip */
+    .hash-strip {
+      margin-top: 12px;
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 10px;
+      padding: 13px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .hash-strip .k {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-mute); white-space: nowrap;
+    }
+    .hash-strip .v {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--ink-soft);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      flex: 1;
+    }
+    .hash-strip .tip {
+      font-size: 11px; color: var(--ink-mute); white-space: nowrap;
+    }
+
+    /* ─── Attestation preview (charcoal) ─── */
+    .attest {
+      position: relative;
+      background: var(--charcoal);
+      border-radius: 12px;
+      padding: 20px 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px; line-height: 1.9;
+      color: #d6cfc1;
+    }
+    .attest-lbl {
+      position: absolute; top: 15px; right: 18px;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .attest .schema {
+      color: #7a7064; font-size: 11.5px;
+      margin: 0 0 14px; padding-bottom: 13px;
+      border-bottom: 0.5px solid #312c27;
+      white-space: pre-wrap; line-height: 1.6;
+    }
+    .attest .row { display: flex; gap: 10px; }
+    .attest .field { color: #8f857a; min-width: 116px; }
+    .attest .val { color: #e8dccd; word-break: break-all; }
+    .attest .val.acc { color: var(--crimson-on-dark); }
+
+    /* ─── Sign button ─── */
+    .sign-zone { margin-top: 26px; }
+    .btn-sign {
+      width: 100%;
+      background: var(--ink); color: var(--paper);
+      border: none; border-radius: 12px;
+      padding: 17px 24px;
+      font-size: 15px; font-weight: 700;
+      letter-spacing: -0.01em;
+      transition: background 0.15s, opacity 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-sign:hover:not(:disabled) { background: var(--crimson); }
+    .btn-sign:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-sign .spin {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-sign.busy .spin { display: inline-block; }
+    .sign-note {
+      margin: 12px auto 0; text-align: center;
+      font-size: 12px; color: var(--ink-mute);
+      max-width: 50ch;
+    }
+    .sign-note code { background: var(--paper-soft); padding: 1px 5px; border-radius: 3px; font-size: 11.5px; }
+
+    /* ─── Wallet popup (simulated) ─── */
+    .modal-scrim {
+      position: fixed; inset: 0; z-index: 80;
+      background: rgba(20,18,15,0.42);
+      display: none; align-items: center; justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(2px);
+    }
+    .modal-scrim.show { display: flex; }
+    .wpop {
+      width: 340px; max-width: 100%;
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 24px 60px rgba(20,18,15,0.28);
+      overflow: hidden;
+    }
+    .wpop-head {
+      padding: 16px 20px; border-bottom: 0.5px solid var(--line);
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13.5px; font-weight: 700;
+    }
+    .wpop-head .wlogo {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--crimson-hi), var(--crimson));
+    }
+    .wpop-body { padding: 20px; }
+    .wpop-body .ttl { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+    .wpop-body .meta { font-size: 12px; color: var(--ink-mute); margin: 0 0 16px; }
+    .wpop-data {
+      background: var(--paper-soft);
+      border: 0.5px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      line-height: 1.8; color: var(--ink-soft);
+      max-height: 150px; overflow: auto;
+    }
+    .wpop-data .f { color: var(--ink-mute); }
+    .wpop-gas {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--ink-soft);
+      margin: 14px 2px 0;
+    }
+    .wpop-gas .g { font-family: 'JetBrains Mono', monospace; }
+    .wpop-actions { display: flex; gap: 10px; padding: 16px 20px; border-top: 0.5px solid var(--line); }
+    .wpop-actions button {
+      flex: 1; border-radius: 10px; padding: 11px;
+      font-size: 13px; font-weight: 600; border: 0.5px solid var(--line);
+      background: var(--paper); color: var(--ink-soft);
+      transition: all 0.15s;
+    }
+    .wpop-actions .confirm { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .wpop-actions .confirm:hover { background: var(--crimson); border-color: var(--crimson); }
+    .wpop-actions .reject:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* ─── Result panel ─── */
+    .result {
+      display: none;
+      margin-top: 26px;
+      border: 0.5px solid var(--ok);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--paper-card);
+    }
+    .result.show { display: block; animation: rise 0.4s ease; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .result-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 18px 22px;
+      background: rgba(47,107,63,0.07);
+      border-bottom: 0.5px solid rgba(47,107,63,0.25);
+    }
+    .result-check {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--ok); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 15px;
+    }
+    .result-head .rt { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .result-head .rs { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+    .result-rows { padding: 6px 22px 8px; }
+    .result-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 0.5px solid var(--line-soft);
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row .k {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-mute); width: 130px; flex-shrink: 0;
+    }
+    .result-row .v {
+      font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+      color: var(--ink); flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .result-row .copy {
+      background: transparent; border: 0.5px solid var(--line);
+      color: var(--ink-mute); border-radius: 6px;
+      padding: 4px 9px; font-size: 10.5px; font-family: 'JetBrains Mono', monospace;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .result-row .copy:hover { color: var(--ink); border-color: var(--ink); }
+    .result-row .copy.copied { color: var(--ok); border-color: var(--ok); }
+    .result-actions {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      padding: 16px 22px 20px;
+      border-top: 0.5px solid var(--line);
+    }
+    .result-actions a {
+      flex: 1; min-width: 160px; text-align: center;
+      padding: 12px; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      transition: all 0.15s;
+    }
+    .result-actions .a-primary { background: var(--ink); color: var(--paper); }
+    .result-actions .a-primary:hover { background: var(--crimson); }
+    .result-actions .a-ghost {
+      border: 0.5px solid var(--line); color: var(--ink-soft);
+    }
+    .result-actions .a-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* pending toast inline */
+    .pending {
+      display: none;
+      margin-top: 18px;
+      align-items: center; gap: 12px;
+      background: var(--charcoal);
+      color: #d6cfc1;
+      border-radius: 12px;
+      padding: 15px 18px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+    }
+    .pending.show { display: flex; }
+    .pending .spin {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: var(--crimson-on-dark);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+    .pending .ph { color: #8f857a; }
+    .pending a { color: var(--crimson-on-dark); border-bottom: 1px dotted currentColor; }
+
+    /* security note */
+    .secnote {
+      margin: 40px 0 0;
+      border-top: 0.5px solid var(--line);
+      padding-top: 18px;
+      font-size: 12px; line-height: 1.7; color: var(--ink-mute);
+    }
+    .secnote b { color: var(--ink-soft); font-weight: 600; }
+    .secnote .lock { color: var(--crimson); }
+
+    /* footer */
+    .foot {
+      border-top: 0.5px solid var(--line);
+      margin-top: 80px; padding: 22px 0 40px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--ink-mute); letter-spacing: 0.02em;
+    }
+    .foot-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    }
+    .foot-inner a:hover { color: var(--crimson); }
+    .foot-l { display: flex; gap: 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+
+  <!-- ─── MASTHEAD ─── -->
+  <header class="mast">
+    <div class="mast-row">
+      <a href="01-home.html" class="brand"><span class="mark"></span>Web3Law</a>
+      <div class="mast-right">
+        <button class="wallet-crest" id="walletCrest" aria-label="连接钱包" aria-expanded="false">
+          <span class="wc-default"></span>
+          <span class="wc-avatar" id="wcAvatar"></span>
+          <span class="wc-dot"></span>
+        </button>
+        <button class="menu-btn" id="menuBtn" aria-label="菜单" aria-expanded="false"><span class="bars"></span></button>
+      </div>
+      <nav class="menu-panel" id="menuPanel" aria-label="站点导航">
+        <div class="menu-eyebrow">Web3Law</div>
+        <a href="publish.html"><span class="mtxt"><span class="mt">发布报告</span><span class="msub">签名上链你的文章</span></span><span class="ar">→</span></a>
+        <a href="reports.html"><span class="mtxt"><span class="mt">报告目录</span><span class="msub">链上可验证内容库</span></span><span class="ar">→</span></a>
+        <a href="how-it-works.html"><span class="mtxt"><span class="mt">How it works</span><span class="msub">三方付费闭环</span></span><span class="ar">→</span></a>
+      </nav>
+      <div class="wallet-pop" id="walletPop"></div>
+    </div>
+  </header>
+
+  <!-- ─── MAIN ─── -->
+  <main data-screen-label="Publish">
+    <p class="eyebrow">Story 1 · Import → Sign + Attest</p>
+    <h1 class="display">确认导入的报告,<br /><em>定价并签名上链</em>。</h1>
+    <p class="sub">从首页导入一篇公众号 / Mirror / Substack 文章后,这里会抓取标题、标签和作者。你设定价格,连接钱包签名 —— 一条 EAS 存证写入 Base,报告即刻进入 /reports,之后每笔付费都直达你的地址。</p>
+
+    <!-- Imported source strip -->
+    <div class="import-strip">
+      <span class="is-ico">⇣</span>
+      <div class="is-text">
+        <div class="is-l1">已从公众号导入这篇文章</div>
+        <div class="is-l2">mp.weixin.qq.com/s/Xk2pQ… · @cryptolaw_cn</div>
+      </div>
+      <a href="01-home.html" class="is-edit">重新导入</a>
+    </div>
+
+    <!-- STEP 1 · Confirm imported report -->
+    <div class="step">
+      <span class="num">01</span>
+      <h2>确认导入的报告</h2>
+      <span class="hint">title / tags / author 自动抓取</span>
+    </div>
+
+    <div class="review">
+      <div class="review-top">
+        <div class="review-tags">
+          <span class="tag cat">Enforcement</span>
+          <span class="tag">中国大陆</span>
+          <span class="tag">OTC</span>
+          <span class="tag">帮信罪</span>
+        </div>
+        <h3>OTC 收 USDT 后银行卡被冻:基于 23 起真实案例的应对指南</h3>
+        <p class="summary">复盘 23 起 2024–2026 真实冻卡案例,提炼银行风控与司法冻结的 5 分钟区分法、立即应对的 7 个动作、退赔谈判中的关键底线,以及训诫书该不该签。</p>
+        <div class="review-byline">
+          <span class="av">陈</span><b>陈律师</b>
+          <span class="plat">@cryptolaw_cn · 公众号</span>
+        </div>
+      </div>
+      <div class="review-meta">
+        <div class="rm-cell"><div class="k">slug</div><div class="v" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;">otc-freeze-case-001</div></div>
+        <div class="rm-cell"><div class="k">jurisdiction</div><div class="v">中国大陆</div></div>
+        <div class="rm-cell"><div class="k">word count</div><div class="v">2,043</div></div>
+        <div class="rm-cell"><div class="k">read time</div><div class="v">14 min</div></div>
+      </div>
+    </div>
+
+    <div class="hash-strip">
+      <span class="k">contentHash</span>
+      <span class="v" id="contentHash">0x9f2c4e7a1b8d3056c2f9a4e1d7b06c83e5a29f14d8b3c6071e2a5f9c4b8d3e60</span>
+      <span class="tip">keccak256(markdown body)</span>
+    </div>
+
+    <!-- STEP 2 · Set price -->
+    <div class="step">
+      <span class="num">02</span>
+      <h2>设定价格</h2>
+      <span class="hint">作者自己定 · 链上写入</span>
+    </div>
+
+    <div class="price-set">
+      <div class="price-field">
+        <span class="cur">$</span>
+        <input id="priceInput" type="text" inputmode="decimal" value="0.30" aria-label="单篇价格" />
+        <span class="per">/ 篇</span>
+      </div>
+      <div class="price-side">
+        <div class="ps-conv">链上写入 <code id="usdcOut">300000</code> <span>priceUSDC · USDC 6 decimals</span></div>
+        <div class="ps-presets">
+          <button data-p="0.05">$0.05</button>
+          <button data-p="0.30" class="on">$0.30</button>
+          <button data-p="0.50">$0.50</button>
+          <button data-p="1.00">$1.00</button>
+        </div>
+        <div class="ps-note">真人 x402 阅读与 Agent API 调用 <b>同价</b> · 最低 $0.05 · 平台 0 抽成,100% 直达你的钱包。</div>
+      </div>
+    </div>
+
+    <!-- STEP 3 · Connect wallet + sign -->
+    <div class="step">
+      <span class="num">03</span>
+      <h2>连接钱包并签名上链</h2>
+      <span class="hint">revocable · recipient = author</span>
+    </div>
+
+    <!-- Wallet bar -->
+    <div class="wallet-bar" id="walletBar">
+      <div class="wallet-l">
+        <span class="wallet-dot" id="wDot"></span>
+        <div class="wallet-text">
+          <div class="l1" id="wL1">钱包未连接</div>
+          <div class="l2" id="wL2">连接的地址必须 = 作者地址,否则拒绝上链</div>
+        </div>
+      </div>
+      <span class="net-badge" id="netBadge" style="display:none;">network · <b>Base Sepolia</b></span>
+      <button class="btn-wallet" id="btnWallet">连接钱包</button>
+    </div>
+
+    <div class="attest" style="margin-top:12px;">
+      <span class="attest-lbl">EAS Schema</span>
+      <div class="schema">bytes32 contentHash, address author, uint96 priceUSDC,
+string slug, string title</div>
+      <div class="row"><span class="field">contentHash</span><span class="val">0x9f2c…3e60</span></div>
+      <div class="row"><span class="field">author</span><span class="val" id="attAuthor">— 连接钱包后填入 —</span></div>
+      <div class="row"><span class="field">priceUSDC</span><span class="val acc" id="attPrice">300000 <span style="color:#7a7064;">· $0.30 · 6 decimals</span></span></div>
+      <div class="row"><span class="field">slug</span><span class="val">otc-freeze-case-001</span></div>
+      <div class="row"><span class="field">title</span><span class="val">OTC 收 USDT 后银行卡被冻…</span></div>
+    </div>
+
+    <!-- Sign zone -->
+    <div class="sign-zone">
+      <button class="btn-sign" id="btnSign" disabled>
+        <span class="spin"></span>
+        <span id="signLabel">连接钱包后可签名</span>
+      </button>
+      <p class="sign-note" id="signNote">签名只确认作者身份与定价,<b>不</b>支付内容费用 —— 仅需少量 Sepolia ETH 付 gas。</p>
+    </div>
+
+    <!-- Pending -->
+    <div class="pending" id="pending">
+      <span class="spin"></span>
+      <span><span class="ph">tx pending</span> · 等待 Base Sepolia 确认 · <a href="#" id="pendingTx">0xa1f0…c704</a></span>
+    </div>
+
+    <!-- Result -->
+    <div class="result" id="result">
+      <div class="result-head">
+        <span class="result-check">✓</span>
+        <div>
+          <div class="rt">存证已上链 · Attestation live</div>
+          <div class="rs">这篇报告现在可被任何人验证作者与定价,并将自动出现在 /reports。</div>
+        </div>
+      </div>
+      <div class="result-rows">
+        <div class="result-row">
+          <span class="k">attestation uid</span>
+          <span class="v">0x3b7e1f9a2c6d8043e5b1a9f7c2d4e80163a5b9f1c7d2e406a8b3f5c1d9e07a24</span>
+          <button class="copy" data-copy="0x3b7e1f9a2c6d8043e5b1a9f7c2d4e80163a5b9f1c7d2e406a8b3f5c1d9e07a24">copy</button>
+        </div>
+        <div class="result-row">
+          <span class="k">tx hash</span>
+          <span class="v">0xa1f0c93e7b25d4861f0a3c9e2b7d54081a6f3c0e9b2d7541a8c0f3e6b9d2c704</span>
+          <button class="copy" data-copy="0xa1f0c93e7b25d4861f0a3c9e2b7d54081a6f3c0e9b2d7541a8c0f3e6b9d2c704">copy</button>
+        </div>
+        <div class="result-row">
+          <span class="k">attester</span>
+          <span class="v" id="resAttester">0x7C3aE9d4b18F206c8B9b4c5e2D1a3F7e90C4bA2f</span>
+          <button class="copy" data-copy="0x7C3aE9d4b18F206c8B9b4c5e2D1a3F7e90C4bA2f">copy</button>
+        </div>
+      </div>
+      <div class="result-actions">
+        <a href="https://base-sepolia.easscan.org" target="_blank" rel="noopener" class="a-primary">在 EAS Explorer 验证 ↗</a>
+        <a href="reports.html" class="a-ghost">前往 /reports 查看 →</a>
+      </div>
+    </div>
+
+    <p class="secnote">
+      <span class="lock">⛨</span> <b>服务端独立校验</b> · contentHash 在响应内重算并比对,attester 必须等于 frontmatter author,slug 走 a-z0-9- 白名单。任一不一致则拒绝上索引。
+    </p>
+  </main>
+
+  <!-- Wallet popup -->
+  <div class="modal-scrim" id="scrim">
+    <div class="wpop">
+      <div class="wpop-head"><span class="wlogo"></span>RainbowKit · 签名请求</div>
+      <div class="wpop-body">
+        <p class="ttl">Web3Law 请求签名</p>
+        <p class="meta">EAS attest · Base Sepolia · 此操作会写入一条链上存证</p>
+        <div class="wpop-data">
+<span class="f">schema</span>  contentHash, author, priceUSDC, slug, title
+<span class="f">author</span>  0x7C3aE9d4…90C4bA2f
+<span class="f">price</span>   <span id="wpopPrice">300000</span>  (uint96)
+<span class="f">slug</span>    otc-freeze-case-001
+<span class="f">revocable</span> true
+        </div>
+        <div class="wpop-gas">
+          <span>Estimated gas</span>
+          <span class="g">~0.00021 ETH</span>
+        </div>
+      </div>
+      <div class="wpop-actions">
+        <button class="reject" id="wReject">拒绝</button>
+        <button class="confirm" id="wConfirm">签名</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="foot">
+    <div class="foot-inner">
+      <div class="foot-l">
+        <a href="01-home.html">home</a>
+        <a href="reports.html">reports</a>
+        <a href="publish.html">publish</a>
+      </div>
+      <span>EAS on Base Sepolia · 0% platform fee</span>
+    </div>
+  </footer>
+
+  <script>
+    const AUTHOR = '0x7C3aE9d4b18F206c8B9b4c5e2D1a3F7e90C4bA2f';
+    const AUTHOR_SHORT = '0x7C3aE9d4…90C4bA2f';
+
+    let connected = false;
+    const $ = id => document.getElementById(id);
+
+    // ── Price setter ──
+    const priceInput = $('priceInput');
+    function applyPrice(val) {
+      let p = parseFloat(val);
+      if (isNaN(p)) return;
+      if (p < 0.05) p = 0.05;
+      const usdc = Math.round(p * 1e6);
+      const dollars = '$' + p.toFixed(2);
+      $('usdcOut').textContent = usdc.toLocaleString('en-US');
+      $('attPrice').innerHTML = usdc.toLocaleString('en-US') + ' <span style="color:#7a7064;">· ' + dollars + ' · 6 decimals</span>';
+      $('wpopPrice').textContent = usdc.toLocaleString('en-US');
+      // sync preset highlight
+      document.querySelectorAll('.ps-presets button').forEach(b => {
+        b.classList.toggle('on', parseFloat(b.dataset.p).toFixed(2) === p.toFixed(2));
+      });
+    }
+    priceInput.addEventListener('input', () => applyPrice(priceInput.value));
+    priceInput.addEventListener('blur', () => {
+      let p = parseFloat(priceInput.value);
+      if (isNaN(p) || p < 0.05) p = 0.05;
+      priceInput.value = p.toFixed(2);
+      applyPrice(priceInput.value);
+    });
+    document.querySelectorAll('.ps-presets button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        priceInput.value = parseFloat(btn.dataset.p).toFixed(2);
+        applyPrice(priceInput.value);
+      });
+    });
+
+    // ── Wallet connect ──
+    $('btnWallet').addEventListener('click', () => {
+      if (connected) return;
+      connected = true;
+      $('wDot').classList.add('on');
+      $('wL1').textContent = '陈律师 · 已连接';
+      $('wL2').textContent = AUTHOR;
+      $('netBadge').style.display = '';
+      $('btnWallet').textContent = '断开';
+      $('attAuthor').textContent = AUTHOR;
+      $('btnSign').disabled = false;
+      $('signLabel').textContent = 'Sign + Attest';
+    });
+
+    // ── Sign flow ──
+    const btnSign = $('btnSign');
+    btnSign.addEventListener('click', () => {
+      if (!connected || btnSign.disabled) return;
+      // open wallet popup
+      $('scrim').classList.add('show');
+    });
+
+    $('wReject').addEventListener('click', () => {
+      $('scrim').classList.remove('show');
+    });
+
+    $('wConfirm').addEventListener('click', () => {
+      $('scrim').classList.remove('show');
+      // busy → pending → result
+      btnSign.classList.add('busy');
+      btnSign.disabled = true;
+      $('signLabel').textContent = '等待签名…';
+      setTimeout(() => {
+        $('signLabel').textContent = '广播交易中…';
+        $('pending').classList.add('show');
+      }, 700);
+      setTimeout(() => {
+        btnSign.classList.remove('busy');
+        btnSign.style.display = 'none';
+        $('signNote').style.display = 'none';
+        $('pending').classList.remove('show');
+        $('result').classList.add('show');
+      }, 2600);
+    });
+
+    // ── Copy buttons ──
+    document.querySelectorAll('.copy').forEach(btn => {
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+          const o = btn.textContent;
+          btn.textContent = 'copied'; btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = o; btn.classList.remove('copied'); }, 1400);
+        }).catch(() => {});
+      });
+    });
+    // ── Hamburger menu ──
+    (function () {
+      const mb = document.getElementById('menuBtn');
+      const mp = document.getElementById('menuPanel');
+      if (!mb || !mp) return;
+      function closeMenu() { mp.classList.remove('open'); mb.classList.remove('open'); mb.setAttribute('aria-expanded', 'false'); }
+      mb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = mp.classList.toggle('open');
+        mb.classList.toggle('open', open);
+        mb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', (e) => { if (!mp.contains(e.target) && !mb.contains(e.target)) closeMenu(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    })();
+
+    // ── Wallet login crest ──
+    (function () {
+      const KEY = 'web3law_wallet';
+      const DEMO = '0x7C3aE9d4b18F206c8B9b4c5e2D1a3F7e90C4bA2f';
+      const crest = document.getElementById('walletCrest');
+      const pop = document.getElementById('walletPop');
+      const avatar = document.getElementById('wcAvatar');
+      if (!crest || !pop) return;
+      const short = a => a.slice(0,6) + '…' + a.slice(-4);
+      function gradient(a){
+        const h1 = parseInt(a.slice(2,5),16)%360, h2 = parseInt(a.slice(6,9),16)%360, h3 = parseInt(a.slice(10,13),16)%360;
+        return 'conic-gradient(from 30deg, hsl('+h1+' 58% 52%), hsl('+h2+' 62% 44%), hsl('+h3+' 56% 56%), hsl('+h1+' 58% 52%))';
+      }
+      function render(){
+        const addr = localStorage.getItem(KEY);
+        if (addr) {
+          crest.classList.add('on');
+          crest.setAttribute('aria-label', '账户 ' + short(addr));
+          avatar.style.background = gradient(addr);
+          pop.innerHTML =
+            '<div class="wp-state"><div class="wp-row"><span class="wp-av" style="background:'+gradient(addr)+'"></span>'+
+            '<div class="wp-meta"><div class="wp-l1">已连接</div><div class="wp-l2">'+addr+'</div></div></div>'+
+            '<div class="wp-net"><span class="gdot"></span>Base Sepolia · 已验证</div></div>'+
+            '<div class="wp-actions"><button class="wp-btn" data-act="copy">复制地址</button>'+
+            '<button class="wp-btn danger" data-act="disconnect">断开连接</button></div>';
+        } else {
+          crest.classList.remove('on');
+          crest.setAttribute('aria-label', '连接钱包');
+          pop.innerHTML =
+            '<div class="wp-connect"><p class="wp-ttl">连接钱包</p>'+
+            '<p class="wp-sub">连接后即可签名发布、付费解锁,头像将变为你的链上身份。</p>'+
+            '<button class="wp-cta" data-act="connect">连接钱包</button></div>';
+        }
+      }
+      function close(){ pop.classList.remove('open'); crest.setAttribute('aria-expanded','false'); }
+      crest.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const mp = document.getElementById('menuPanel'), mb = document.getElementById('menuBtn');
+        if (mp) mp.classList.remove('open');
+        if (mb) { mb.classList.remove('open'); mb.setAttribute('aria-expanded','false'); }
+        const open = pop.classList.toggle('open');
+        crest.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      pop.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-act]'); if (!b) return;
+        const act = b.dataset.act;
+        if (act === 'connect') { localStorage.setItem(KEY, DEMO); render(); }
+        else if (act === 'disconnect') { localStorage.removeItem(KEY); render(); close(); }
+        else if (act === 'copy') {
+          if (navigator.clipboard) navigator.clipboard.writeText(localStorage.getItem(KEY) || '');
+          b.textContent = '已复制'; setTimeout(() => { b.textContent = '复制地址'; }, 1300);
+        }
+      });
+      document.addEventListener('click', (e) => { if (!pop.contains(e.target) && !crest.contains(e.target)) close(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      render();
+    })();
+  </script>
+</body>
+</html>

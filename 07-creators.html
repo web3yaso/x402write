@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>For Creators · 把历史稿子授权入网 — Web3Law</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    /* —— Hero (sand bg, big serif statement) ——— */
+    .creators-hero {
+      background: var(--bg-sand);
+      padding: 96px 0 80px;
+      position: relative; overflow: hidden;
+    }
+    .creators-hero::after {
+      content: ""; position: absolute;
+      top: -120px; right: -120px;
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      background: var(--color-crimson);
+      opacity: 0.08;
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .creators-hero .container { position: relative; z-index: 1; }
+    .creators-hero h1 {
+      font-family: var(--font-serif); font-weight: 900;
+      font-size: clamp(38px, 5.5vw, 62px);
+      line-height: 1.05; letter-spacing: -0.01em;
+      max-width: 14ch;
+      margin: 18px 0 0;
+    }
+    .creators-hero h1 .accent { color: var(--color-crimson); }
+    .creators-hero .lede {
+      margin-top: 28px;
+      font-size: 18px; line-height: 1.65;
+      color: var(--text-secondary); max-width: 54ch;
+    }
+    .creators-hero .hero-cta { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .creators-hero .quick-stats {
+      margin-top: 48px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(139,31,48,0.2);
+      display: grid; gap: 20px;
+      grid-template-columns: repeat(2, 1fr);
+      max-width: 600px;
+    }
+    @media (min-width: 700px) { .creators-hero .quick-stats { grid-template-columns: repeat(3, 1fr); } }
+    .creators-hero .quick-stats strong {
+      font-family: var(--font-serif); font-weight: 900;
+      font-size: 32px; color: var(--color-crimson);
+      display: block; line-height: 1;
+    }
+    .creators-hero .quick-stats span {
+      font-size: 12px; color: var(--text-secondary);
+      margin-top: 6px; display: block;
+    }
+
+    /* —— Value props ——————————————————————— */
+    .value-section { padding: 96px 0; background: var(--bg-warm-white); }
+    .value-grid {
+      display: grid; gap: 0;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 880px) { .value-grid { grid-template-columns: repeat(3, 1fr); } }
+    .value-cell {
+      padding: 36px 32px;
+      border: 0.5px solid var(--border-default);
+      background: var(--bg-white);
+    }
+    @media (min-width: 880px) {
+      .value-cell { border-right: none; }
+      .value-cell:last-child { border-right: 0.5px solid var(--border-default); }
+    }
+    .value-cell .icon-row {
+      display: flex; gap: 14px; align-items: center;
+      margin-bottom: 18px;
+    }
+    .value-cell .icon-box {
+      width: 44px; height: 44px;
+      background: var(--color-crimson-tint);
+      color: var(--color-crimson);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .value-cell .small-num {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.14em; color: var(--text-tertiary);
+    }
+    .value-cell h3 {
+      font-family: var(--font-serif); font-weight: 700;
+      font-size: 22px; line-height: 1.3; margin: 0 0 14px;
+      color: var(--text-primary);
+    }
+    .value-cell p {
+      color: var(--text-secondary); font-size: 14px; line-height: 1.7;
+      margin: 0;
+    }
+
+    /* —— Three revenue streams (charcoal block) ——— */
+    .revenue-section {
+      background: var(--color-charcoal);
+      color: #f1ebe5;
+      padding: 96px 0;
+    }
+    .revenue-section .eyebrow { color: var(--bg-sand); }
+    .revenue-section h2 {
+      font-family: var(--font-serif); font-weight: 700;
+      color: #fff;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.2; margin: 12px 0 0;
+      max-width: 18ch;
+    }
+    .revenue-section .lede-light {
+      color: rgba(255,255,255,0.7);
+      max-width: 56ch; margin: 24px 0 0;
+      font-size: 16px; line-height: 1.7;
+    }
+    .revenue-grid {
+      display: grid; gap: 18px;
+      grid-template-columns: 1fr;
+      margin-top: 56px;
+    }
+    @media (min-width: 880px) { .revenue-grid { grid-template-columns: repeat(3, 1fr); } }
+    .rev-card {
+      background: rgba(255,255,255,0.04);
+      border: 0.5px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-lg);
+      padding: 28px 26px;
+    }
+    .rev-card .badge {
+      display: inline-block;
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 3px 10px;
+      background: rgba(234,216,204,0.15);
+      color: var(--bg-sand);
+      border-radius: var(--radius-full);
+    }
+    .rev-card h4 {
+      font-family: var(--font-serif); font-weight: 700;
+      font-size: 19px; color: #fff;
+      margin: 16px 0 10px;
+    }
+    .rev-card .price-line {
+      font-family: var(--font-mono); font-size: 13px;
+      color: rgba(255,255,255,0.85); margin-bottom: 14px;
+    }
+    .rev-card .price-line strong {
+      font-family: var(--font-serif); font-size: 22px;
+      color: var(--bg-sand); display: block;
+      margin-bottom: 4px;
+    }
+    .rev-card p {
+      color: rgba(255,255,255,0.65);
+      font-size: 13px; line-height: 1.6;
+      margin: 0;
+    }
+
+    /* —— Mock author dashboard ——————————————— */
+    .dashboard-section { padding: 96px 0; background: var(--bg-cream); }
+    .dashboard-grid {
+      display: grid; gap: 48px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 1000px) { .dashboard-grid { grid-template-columns: 1fr 1.2fr; gap: 64px; } }
+    .dashboard-section h2 { margin: 14px 0 18px; }
+    .dashboard-section .lede { margin-bottom: 24px; }
+    .dash-list { list-style: none; padding: 0; margin: 0; }
+    .dash-list li {
+      padding: 14px 0;
+      border-bottom: 0.5px solid var(--border-default);
+      display: flex; gap: 14px; align-items: flex-start;
+      font-size: 14px; color: var(--text-secondary);
+      line-height: 1.65;
+    }
+    .dash-list li::before {
+      content: "→";
+      color: var(--color-crimson); font-weight: bold;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .dash-list strong { color: var(--text-primary); }
+
+    /* The mock dashboard widget */
+    .dash-widget {
+      background: var(--bg-white);
+      border: 0.5px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: 0 28px 70px -30px rgba(47,44,40,0.15);
+    }
+    .dash-widget .top {
+      display: flex; align-items: center; gap: 14px;
+      padding-bottom: 16px;
+      border-bottom: 0.5px solid var(--border-light);
+      margin-bottom: 20px;
+    }
+    .dash-widget .top .avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%; background: #1E3A8A;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-serif); font-weight: 700; font-size: 18px;
+    }
+    .dash-widget .top .who strong {
+      display: block; font-family: var(--font-serif); font-weight: 700;
+      font-size: 16px;
+    }
+    .dash-widget .top .who span {
+      font-size: 11px; color: var(--text-tertiary);
+      font-family: var(--font-mono);
+    }
+    .dash-widget .top .balance {
+      margin-left: auto; text-align: right;
+    }
+    .dash-widget .top .balance .lbl {
+      font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-tertiary);
+      font-family: var(--font-mono);
+    }
+    .dash-widget .top .balance .amt {
+      font-family: var(--font-serif); font-weight: 900;
+      font-size: 24px; color: var(--color-crimson);
+      line-height: 1;
+    }
+
+    .dash-tabs {
+      display: flex; gap: 4px; font-family: var(--font-mono);
+      font-size: 11px; letter-spacing: 0.04em;
+      margin-bottom: 18px;
+    }
+    .dash-tab {
+      padding: 8px 12px;
+      color: var(--text-tertiary); cursor: pointer;
+    }
+    .dash-tab.active {
+      color: var(--text-primary); font-weight: 700;
+      border-bottom: 2px solid var(--color-crimson);
+    }
+
+    .dash-article-row {
+      display: grid; grid-template-columns: 1fr auto auto auto;
+      gap: 16px; padding: 12px 0; align-items: center;
+      font-size: 13px;
+      border-bottom: 0.5px solid var(--border-light);
+    }
+    .dash-article-row:last-child { border: none; }
+    .dash-article-row .title {
+      color: var(--text-primary); font-weight: var(--font-medium);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 220px;
+    }
+    .dash-article-row .stat-mini {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--text-tertiary);
+      min-width: 50px; text-align: right;
+    }
+    .dash-article-row .stat-mini strong {
+      color: var(--text-primary); display: block;
+      font-family: var(--font-serif); font-size: 14px;
+    }
+    .dash-article-row .earning {
+      color: var(--color-crimson); font-family: var(--font-mono);
+      font-weight: var(--font-semibold);
+      min-width: 50px; text-align: right;
+    }
+    .dash-summary {
+      margin-top: 18px; padding-top: 16px;
+      border-top: 0.5px solid var(--border-default);
+      display: flex; justify-content: space-between;
+      font-size: 11px; font-family: var(--font-mono);
+      color: var(--text-tertiary);
+    }
+    .dash-summary strong { color: var(--text-primary); }
+
+    /* —— Onboarding steps —————————————————— */
+    .onboard-section { padding: 96px 0; }
+    .step-cards {
+      display: grid; gap: 16px;
+      grid-template-columns: 1fr;
+      margin-top: 40px;
+    }
+    @media (min-width: 980px) { .step-cards { grid-template-columns: repeat(4, 1fr); } }
+    .step-card {
+      background: var(--bg-white);
+      border: 0.5px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: 24px 22px;
+      display: flex; flex-direction: column; gap: 12px;
+      position: relative;
+    }
+    .step-card .step-no {
+      font-family: var(--font-serif); font-weight: 900;
+      font-size: 38px; color: var(--color-crimson);
+      line-height: 1;
+    }
+    .step-card h4 {
+      font-family: var(--font-serif); font-weight: 700; font-size: 16px;
+      margin: 0;
+    }
+    .step-card p {
+      color: var(--text-secondary); font-size: 13px; line-height: 1.6;
+      margin: 0;
+    }
+    .step-card .duration {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.1em; color: var(--text-tertiary);
+      text-transform: uppercase;
+    }
+
+    /* —— Final CTA ————————————————————————— */
+    .final-cta {
+      padding: 96px 24px;
+      background: var(--bg-sand);
+      text-align: center;
+    }
+    .final-cta h2 {
+      font-family: var(--font-serif); font-weight: 900;
+      font-size: clamp(32px, 4.5vw, 48px);
+      line-height: 1.15;
+      max-width: 18ch;
+      margin: 0 auto 24px;
+    }
+    .final-cta .accent { color: var(--color-crimson); }
+    .final-cta p {
+      font-size: 16px; color: var(--text-secondary);
+      max-width: 50ch; margin: 0 auto 36px;
+      line-height: 1.65;
+    }
+    .final-cta .cta-row {
+      display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">Mockup · 07 · For Creators (新增)</div>
+
+  <header class="topnav">
+    <div class="container topnav-inner">
+      <a href="01-home.html" class="brand"><span class="brand-mark"></span>Web3Law</a>
+      <nav class="nav-links">
+        <a href="02-reports.html">合规内容库</a>
+        <a href="04-freeze-form.html">冻卡应对</a>
+        <a href="#">稳定币地图</a>
+        <a href="07-creators.html" style="color: var(--color-crimson);">创作者</a>
+      </nav>
+      <a href="06-agents.html" class="nav-cta">Agent 接入 →</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="creators-hero">
+    <div class="container">
+      <div class="eyebrow">For Creators · 合规作者授权计划</div>
+      <h1>已经写过的稿子，<br />让 <span class="accent">Agent</span> 也买单。</h1>
+      <p class="lede">公众号、Mirror、Substack 上沉淀的合规、政策、法律深度，过去只能赚一波阅读。授权进 Web3Law，<strong>你定一个价</strong>，真人 / AI / Agent 任何人付费解锁，<strong>100% 直接打到你的钱包</strong>，平台一分不抽。简单粗暴。</p>
+      <div class="hero-cta">
+        <a href="#apply" class="btn-primary">申请授权（5 分钟）→</a>
+        <a href="02-reports.html" class="btn-outline">先看看现有作者</a>
+      </div>
+      <div class="quick-stats">
+        <div><strong>100%</strong><span>归作者，平台不抽成</span></div>
+        <div><strong>$0.05+</strong><span>作者自主定价</span></div>
+        <div><strong>USDC</strong><span>钱包即时到账</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why -->
+  <section class="value-section">
+    <div class="container">
+      <div class="section-header" style="display:flex; align-items:end; justify-content:space-between; gap:24px; margin-bottom: 48px; flex-wrap: wrap;">
+        <div>
+          <div class="eyebrow">Why Web3Law</div>
+          <h2 class="h-section" style="margin-top:8px;">三件事让"被读过的稿子"<br />变成新收入。</h2>
+        </div>
+      </div>
+
+      <div class="value-grid">
+
+        <div class="value-cell">
+          <div class="icon-row">
+            <div class="icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <span class="small-num">01</span>
+          </div>
+          <h3>不必重写 · 历史稿子直接授权</h3>
+          <p>把已发表在公众号 / Mirror / Substack 的合规深度文章授权进来，不必改一字。原文链接保留，流量回灌原平台，版权归你。我们只授权"被检索、阅读、引用"。</p>
+        </div>
+
+        <div class="value-cell">
+          <div class="icon-row">
+            <div class="icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            </div>
+            <span class="small-num">02</span>
+          </div>
+          <h3>Agent 也是你的读者</h3>
+          <p>2026 越来越多 AI 工具会"读"专家内容来回答用户。我们把你的稿子接入 x402 协议——AI 不再白嫖，每次取用都为你结算。这是公众号打赏永远做不到的。</p>
+        </div>
+
+        <div class="value-cell">
+          <div class="icon-row">
+            <div class="icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+            </div>
+            <span class="small-num">03</span>
+          </div>
+          <h3>直接到钱包 · 平台一分不抽</h3>
+          <p>每一笔 x402 付费由 CDP facilitator 直接结算到你配置的钱包地址，<strong>实时到账，平台一分不抽</strong>。无 KYC、无 30 天回款、无平台中间结算。后台只是看数据，钱不经过我们手。</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 channels, 1 price -->
+  <section class="revenue-section">
+    <div class="container">
+      <div class="eyebrow">2 Channels · 1 Price</div>
+      <h2>两个通道付钱进来，<br />一个价格你说了算。</h2>
+      <p class="lede-light">你给每篇文章定<strong style="color: var(--bg-sand);">一个</strong> x402 价格（最低 $0.05，无上限）。真人读者和 AI / Agent 走同样的 x402 协议、付同样的价格解锁全文。<strong style="color: var(--bg-sand);">100% 直接到作者钱包</strong>，平台不抽成。</p>
+
+      <div class="revenue-grid" style="grid-template-columns: 1fr 1fr;">
+
+        <div class="rev-card">
+          <span class="badge">Channel 01 · 真人读者</span>
+          <h4>钱包 → x402 → 永久解锁</h4>
+          <div class="price-line"><strong>= 你定的价</strong>例如 $0.30 / 篇</div>
+          <p>真人读者在站内连钱包，x402 一次付费解锁全文，永久可读。重读不再收费，钱包不变就好。<strong>100% 实时进你的钱包</strong>，平台一分不抽。</p>
+        </div>
+
+        <div class="rev-card">
+          <span class="badge">Channel 02 · AI / Agent</span>
+          <h4>API + X-Payment header → 拿全文</h4>
+          <div class="price-line"><strong>= 同一个价</strong>真人付多少，AI 付多少</div>
+          <p>第三方 AI 工具 / autonomous agent 通过 <code>GET /api/v1/reports/:slug</code> + X-Payment header 走同样的 x402 协议、付同样的价格。响应含完整 markdown + 强制 citation 元数据。</p>
+        </div>
+
+      </div>
+
+      <div style="margin-top: 48px; padding: 24px 28px; background: rgba(255,255,255,0.04); border-radius: var(--radius-lg); border: 0.5px dashed rgba(255,255,255,0.18);">
+        <p style="margin: 0 0 12px; color: rgba(255,255,255,0.65); font-size: 13px; line-height: 1.7;"><strong style="color: #fff;">为什么不分两个价？</strong>因为 agent 也是你的读者，区别只是它没有眼睛 —— 它读你的稿子是为了帮人类回答问题。同价更公平、对作者更简单、对 agent 更友好。</p>
+        <p style="margin: 0; color: rgba(255,255,255,0.65); font-size: 13px; line-height: 1.7;"><strong style="color: var(--bg-sand);">为什么平台不抽成？</strong>v1.0 阶段我们靠工具变现（冻卡诊断、律师匹配），不靠内容分润。给作者全额是冷启动最直接的诚意，也希望让"被 agent 读"成为合规作者的新基础设施。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mock dashboard -->
+  <section class="dashboard-section">
+    <div class="container">
+      <div class="dashboard-grid">
+        <div>
+          <div class="eyebrow">Author Dashboard</div>
+          <h2 class="h-section">实时看你的稿子<br />在网络里被怎么用。</h2>
+          <p class="lede">每个作者有独立后台。看哪些稿子真人读得最多、被哪些 Agent 钱包调用、本周打了多少 USDC 进你的钱包。透明，无中间结算商。</p>
+          <ul class="dash-list">
+            <li><strong>实时数据</strong> · 真人解锁 / AI 调用 / 收入按小时刷新</li>
+            <li><strong>稿子排名</strong> · 看哪些主题需求量最大，决定下一篇写什么</li>
+            <li><strong>钱包直接结算</strong> · 每周自动打款，无需手动 withdraw</li>
+            <li><strong>定价自主权</strong> · 随时调整单篇价格，平台不干涉</li>
+            <li><strong>付费来源透明</strong> · 看到每笔交易是真人钱包还是 agent 钱包</li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="dash-widget">
+            <div class="top">
+              <div class="avatar">陈</div>
+              <div class="who">
+                <strong>陈律师</strong>
+                <span>@cryptolaw_cn · 6 articles</span>
+              </div>
+              <div class="balance">
+                <div class="lbl">This week · 全额到账</div>
+                <div class="amt">$252.40</div>
+              </div>
+            </div>
+
+            <div class="dash-tabs">
+              <span class="dash-tab active">Articles</span>
+              <span class="dash-tab">Payments</span>
+              <span class="dash-tab">Payouts</span>
+            </div>
+
+            <div>
+              <div class="dash-article-row">
+                <span class="title">OTC 收 USDT 后银行卡被冻：23 起案例…</span>
+                <div class="stat-mini">412 真人</div>
+                <div class="stat-mini">23 agent</div>
+                <span class="earning">$130.50</span>
+              </div>
+              <div class="dash-article-row">
+                <span class="title">虚拟币 OTC 退赔实务：8 个踩坑点</span>
+                <div class="stat-mini">186 真人</div>
+                <div class="stat-mini">12 agent</div>
+                <span class="earning">$79.20</span>
+              </div>
+              <div class="dash-article-row">
+                <span class="title">帮信罪 vs 掩隐罪：罪名认定边界</span>
+                <div class="stat-mini">98 真人</div>
+                <div class="stat-mini">7 agent</div>
+                <span class="earning">$31.50</span>
+              </div>
+              <div class="dash-article-row">
+                <span class="title">训诫书：6 个真实案例的处理选择</span>
+                <div class="stat-mini">52 真人</div>
+                <div class="stat-mini">4 agent</div>
+                <span class="earning">$11.20</span>
+              </div>
+            </div>
+
+            <div class="dash-summary">
+              <span>Period · <strong>May 15-21</strong></span>
+              <span>结算方式 · <strong>x402 直接到钱包 · 无中间结算</strong></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Onboarding -->
+  <section class="onboard-section">
+    <div class="container">
+      <div class="eyebrow">Onboarding</div>
+      <h2 class="h-section" style="margin-top:8px;">5 分钟流程，<br />从提交到上线。</h2>
+
+      <div class="step-cards">
+        <div class="step-card">
+          <span class="step-no">01</span>
+          <span class="duration">2 分钟</span>
+          <h4>申请并验证身份</h4>
+          <p>提交公众号 / Mirror / Substack 链接 + 实名信息（律师可附执业证）。我们会人工 review，通过后给你后台账号。</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-no">02</span>
+          <span class="duration">1 分钟</span>
+          <h4>填入接收钱包地址</h4>
+          <p>Base 链 EVM 地址（0x...）。所有 x402 付费由 CDP facilitator 直接打到这个地址，平台不经手、不暂存、不抽成。</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-no">03</span>
+          <span class="duration">2 分钟</span>
+          <h4>提交文章 + 自定价</h4>
+          <p>粘贴原文链接（公众号 / Mirror / Substack 均可），我们抓取后做格式清洗。每篇一个价（最低 $0.05，无上限），真人和 Agent 同价。</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-no">04</span>
+          <span class="duration">立即</span>
+          <h4>文章入库 · 实时收款</h4>
+          <p>审核通过后立即可被搜索、付费阅读、Agent 调用。每笔 x402 付费直接到你的钱包，不经过平台中转。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta" id="apply">
+    <h2>把已经写过的合规深度，<br /><span class="accent">变成可调用的资产。</span></h2>
+    <p>不必再去写"爆款"，让真正有价值的存量被 agent 和真人付费使用。今天申请，本周就能开始结算。</p>
+    <div class="cta-row">
+      <a href="#" class="btn-primary">申请授权 →</a>
+      <a href="02-reports.html" class="btn-outline">看看其他作者的稿子</a>
+    </div>
+    <p style="margin-top: 36px; font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); letter-spacing: 0.06em;">
+      v1.0 阶段限量邀请 · 通过初审约 24 小时 · 有问题 hi@web3law.tech
+    </p>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none; margin-top:0; padding-top:0;">
+        <span>© 2026 Web3Law Intelligence · 合规知识授权网络 · 本站内容仅供参考，不构成法律建议。</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

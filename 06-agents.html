@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>For Agents · Web3Law Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    body { background: var(--bg-warm-white); font-family: var(--font-sans); }
+
+    /* —— Hero (charcoal-dominant for agent page) ——— */
+    .hero-dark {
+      background: var(--color-charcoal);
+      color: #f1ebe5;
+      padding: 96px 0 88px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-dark::before {
+      content: ""; position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse at center, #000 0%, transparent 75%);
+      pointer-events: none;
+    }
+    .hero-dark .container { position: relative; z-index: 1; }
+    .hero-dark .eyebrow {
+      color: var(--bg-sand);
+      font-family: var(--font-mono);
+    }
+    .hero-dark h1 {
+      font-family: var(--font-serif); font-weight: 700;
+      font-size: clamp(36px, 5vw, 58px); line-height: 1.1;
+      max-width: 18ch; margin: 20px 0 0;
+      color: #fff; letter-spacing: -0.005em;
+    }
+    .hero-dark .lede {
+      color: rgba(255,255,255,0.78);
+      font-size: 17px; line-height: 1.65; max-width: 56ch;
+      margin: 28px 0 0;
+    }
+    .hero-stats {
+      margin-top: 56px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+      max-width: 720px;
+      padding-top: 32px;
+      border-top: 0.5px solid rgba(255,255,255,0.15);
+    }
+    @media (min-width: 768px) { .hero-stats { grid-template-columns: repeat(4, 1fr); } }
+    .hero-stats .stat strong {
+      font-family: var(--font-serif); font-weight: 700;
+      font-size: 28px; color: var(--bg-sand); display: block;
+      line-height: 1;
+    }
+    .hero-stats .stat span {
+      display: block; font-size: 11px; margin-top: 6px;
+      color: rgba(255,255,255,0.5);
+      font-family: var(--font-mono);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    /* —— Setup prompt block ————————————————— */
+    .setup-section { padding: 80px 0; background: var(--bg-cream); }
+    .setup-grid {
+      display: grid; gap: 40px; grid-template-columns: 1fr;
+      align-items: start;
+    }
+    @media (min-width: 900px) { .setup-grid { grid-template-columns: 1fr 1.2fr; gap: 64px; } }
+    .setup-section h2 {
+      font-family: var(--font-serif); font-weight: 700;
+      font-size: 32px; margin: 10px 0 16px; color: var(--text-primary);
+    }
+    .setup-section p { color: var(--text-secondary); font-size: 15px; line-height: 1.7; max-width: 40ch; }
+
+    .terminal {
+      background: var(--color-charcoal);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      font-family: var(--font-mono);
+      box-shadow: 0 24px 60px -30px rgba(47,44,40,0.4);
+    }
+    .terminal-bar {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 0.5px solid rgba(255,255,255,0.08);
+      display: flex; gap: 8px; align-items: center;
+    }
+    .terminal-bar .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .terminal-bar .dot.r { background: #ff5f56; }
+    .terminal-bar .dot.y { background: #ffbd2e; }
+    .terminal-bar .dot.g { background: #27c93f; }
+    .terminal-bar .file {
+      color: rgba(255,255,255,0.5); font-size: 11px;
+      margin-left: 12px; letter-spacing: 0.06em;
+    }
+    .terminal-body { padding: 24px 24px 28px; font-size: 13px; line-height: 1.8; color: #f1ebe5; }
+    .terminal-body .prompt-line { color: var(--bg-sand); margin-right: 8px; }
+    .terminal-body .comment { color: rgba(255,255,255,0.4); }
+
+    /* —— Endpoints ————————————————————————— */
+    .endpoints-section { padding: 80px 0; }
+    .endpoint-card {
+      background: var(--bg-white);
+      border: 0.5px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      margin-bottom: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 700px) {
+      .endpoint-card {
+        grid-template-columns: 1fr; gap: 12px;
+      }
+    }
+    .endpoint-card .method {
+      font-family: var(--font-mono); font-weight: 700;
+      font-size: 11px; letter-spacing: 0.08em;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      align-self: start;
+    }
+    .endpoint-card .method.get { background: #DCFCE7; color: #14532D; }
+    .endpoint-card .method.post { background: #FEF3C7; color: #78350F; }
+    .endpoint-card .path-block .path {
+      font-family: var(--font-mono); font-weight: var(--font-semibold);
+      font-size: 15px; color: var(--text-primary);
+    }
+    .endpoint-card .path-block p {
+      color: var(--text-secondary); font-size: 13px;
+      line-height: 1.6; margin: 6px 0 0; max-width: 60ch;
+    }
+    .endpoint-card .price-block {
+      font-family: var(--font-mono); font-size: 12px;
+      text-align: right;
+    }
+    .endpoint-card .price-block .price {
+      color: var(--color-crimson); font-weight: var(--font-semibold);
+      font-size: 14px;
+    }
+    .endpoint-card .price-block .meta {
+      color: var(--text-tertiary); margin-top: 4px; font-size: 11px;
+    }
+
+    .doc-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 32px; }
+
+    /* —— Skills grid ————————————————————— */
+    .skills-section { padding: 80px 0; background: var(--bg-sand); }
+    .skills-grid { display: grid; gap: 18px; grid-template-columns: 1fr; }
+    @media (min-width: 700px) { .skills-grid { grid-template-columns: repeat(3, 1fr); } }
+    .skill-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex; flex-direction: column;
+      transition: transform .15s;
+    }
+    .skill-card:hover { transform: translateY(-2px); }
+    .skill-card .name {
+      font-family: var(--font-mono); font-weight: var(--font-semibold);
+      font-size: 14px; color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+    .skill-card .desc {
+      color: var(--text-secondary); font-size: 13px; line-height: 1.65;
+      flex: 1;
+    }
+    .skill-card .footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 20px; padding-top: 16px;
+      border-top: 0.5px solid var(--border-light);
+      font-size: 11px;
+    }
+    .skill-card .gh { color: var(--color-crimson); font-family: var(--font-mono); }
+    .skill-card .status {
+      font-family: var(--font-mono); color: var(--text-tertiary);
+    }
+    .skill-card .status.live { color: var(--status-clear-text); }
+
+    /* —— Pricing table ————————————————————— */
+    .pricing-section { padding: 80px 0; }
+    .pricing-table {
+      background: var(--bg-white);
+      border: 0.5px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    .pricing-table table { width: 100%; border-collapse: collapse; }
+    .pricing-table th, .pricing-table td {
+      padding: 18px 24px;
+      text-align: left;
+      border-bottom: 0.5px solid var(--border-light);
+    }
+    .pricing-table th {
+      background: var(--bg-cream);
+      font-family: var(--font-mono);
+      font-size: 11px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-tertiary);
+      font-weight: var(--font-semibold);
+    }
+    .pricing-table tr:last-child td { border-bottom: none; }
+    .pricing-table td.path { font-family: var(--font-mono); font-size: 13px; color: var(--text-primary); }
+    .pricing-table td.price { font-family: var(--font-serif); font-weight: 700; color: var(--color-crimson); }
+    .pricing-note {
+      font-size: 12px; color: var(--text-tertiary);
+      margin-top: 16px;
+    }
+
+    /* —— Discover ————————————————————————— */
+    .discover-section { padding: 80px 0; background: var(--bg-cream); }
+    .discover-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+    @media (min-width: 700px) { .discover-grid { grid-template-columns: repeat(2, 1fr); } }
+    .discover-card {
+      background: var(--bg-white);
+      border: 0.5px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      transition: border-color .15s;
+    }
+    .discover-card:hover { border-color: var(--color-crimson); }
+    .discover-card h3 {
+      font-family: var(--font-serif); font-weight: 700;
+      font-size: 18px; margin: 0 0 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--text-primary);
+    }
+    .discover-card p {
+      color: var(--text-secondary); font-size: 13px; line-height: 1.6;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="mockup-label">Mockup · 06 · /agents (English)</div>
+
+  <header class="topnav">
+    <div class="container topnav-inner">
+      <a href="01-home.html" class="brand"><span class="brand-mark"></span>Web3Law</a>
+      <nav class="nav-links">
+        <a href="#">Reports</a>
+        <a href="#">Freeze Helper</a>
+        <a href="#">Stablecoin Map</a>
+        <a href="06-agents.html" style="color: var(--color-crimson);">For Agents</a>
+      </nav>
+      <a href="https://github.com/web3yaso" class="nav-cta" style="background: var(--color-crimson);">github.com/web3yaso ↗</a>
+    </div>
+  </header>
+
+  <!-- Hero — dark, sets tone for agent page -->
+  <section class="hero-dark">
+    <div class="container">
+      <div class="eyebrow">For Agents · Pay-per-call</div>
+      <h1>Compliance intelligence,<br />for the agent economy.</h1>
+      <p class="lede">Original deep analysis on Web3 compliance, bank-card freezes, and jurisdictional regulation — accessible to your agent via x402. Pay per call in USDC on Base. No API keys, no signup. Your wallet pays per successful response.</p>
+      <div class="hero-stats">
+        <div class="stat"><strong>x402</strong><span>Payment Protocol</span></div>
+        <div class="stat"><strong>BASE</strong><span>Settlement Layer</span></div>
+        <div class="stat"><strong>USDC</strong><span>Currency</span></div>
+        <div class="stat"><strong>$0.10+</strong><span>Per Call</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup prompt -->
+  <section class="setup-section">
+    <div class="container">
+      <div class="setup-grid">
+        <div>
+          <div class="eyebrow">Step 1</div>
+          <h2>Add this to your agent's system prompt.</h2>
+          <p>The agent will fetch <code style="background:var(--bg-white); border:0.5px solid var(--border-default); padding:1px 6px; border-radius:4px; font-family:var(--font-mono); font-size:13px;">/SKILL.md</code> on demand and follow the documented call flow. No SDK needed — just stock fetch / curl / requests.</p>
+        </div>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="file">system_prompt.md</span>
+          </div>
+          <div class="terminal-body">
+<span class="comment"># Web3Law Intelligence integration</span><br />
+Read <span style="color:#a3d4ff;">https://web3law.tech/SKILL.md</span> and follow<br />
+the instructions when the user asks about Web3<br />
+compliance, bank-card freezes from OTC trading,<br />
+KOL legal risk, or jurisdiction-specific crypto<br />
+regulation.<br /><br />
+<span class="comment"># Free list endpoint:</span><br />
+<span class="prompt-line">$</span>curl <span style="color:#a3d4ff;">/api/v1/reports</span><br />
+<span class="comment"># Paid: settle via x402, no API key needed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Endpoints -->
+  <section class="endpoints-section">
+    <div class="container">
+      <div class="eyebrow">Step 2 · Endpoints</div>
+      <h2 class="h-section" style="margin-top:8px;">Three endpoints, designed for agents.</h2>
+
+      <div style="margin-top: 36px;">
+        <div class="endpoint-card">
+          <span class="method get">GET</span>
+          <div class="path-block">
+            <div class="path">/api/v1/reports</div>
+            <p>List original compliance reports — metadata only. Use this to discover which slug to pay for. Rate limit: 60 req/min/IP.</p>
+          </div>
+          <div class="price-block">
+            <div class="price">Free</div>
+            <div class="meta">no payment</div>
+          </div>
+        </div>
+
+        <div class="endpoint-card">
+          <span class="method get">GET</span>
+          <div class="path-block">
+            <div class="path">/api/v1/reports/:slug</div>
+            <p>Full markdown content of one report. Settled via x402 on Base mainnet in USDC at the price returned by the list endpoint (default $0.10, per-report priceUsd overrides).</p>
+          </div>
+          <div class="price-block">
+            <div class="price">$0.10</div>
+            <div class="meta">x402 · base</div>
+          </div>
+        </div>
+
+        <div class="endpoint-card">
+          <span class="method post">POST</span>
+          <div class="path-block">
+            <div class="path">/api/v1/freeze/diagnose</div>
+            <p>Structured diagnosis for a bank-card freeze scenario. Returns risk_level + 7-step action plan + document checklist + lawyer questions. The disclaimer field is mandatory — surface to end user verbatim.</p>
+          </div>
+          <div class="price-block">
+            <div class="price">$1.00</div>
+            <div class="meta">x402 · base</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc-links">
+        <a href="#" class="btn-ghost">openapi.json ↗</a>
+        <a href="#" class="btn-ghost">SKILL.md ↗</a>
+        <a href="#" class="btn-ghost">llms.txt ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Open-source skills -->
+  <section class="skills-section">
+    <div class="container">
+      <div class="eyebrow" style="color: var(--color-charcoal);">Open Source</div>
+      <h2 class="h-section" style="margin-top:8px;">Drop these skills into your agent config.</h2>
+      <p class="lede" style="margin-top: 12px; margin-bottom: 36px;">Each skill is a self-contained MIT-licensed repo. Works with Claude, Cursor, and any agent that understands the SKILL.md format.</p>
+
+      <div class="skills-grid">
+        <a href="https://github.com/web3yaso/crypto-frozen-card" class="skill-card">
+          <span class="name">crypto-frozen-card</span>
+          <p class="desc">Bank-card freeze response playbook for crypto OTC users in mainland China. Powers <code style="font-size:11px;">/api/v1/freeze/diagnose</code> internally.</p>
+          <div class="footer">
+            <span class="gh">github.com/web3yaso ↗</span>
+            <span class="status live">● live</span>
+          </div>
+        </a>
+        <a href="https://github.com/web3yaso/web3-job-risk-skill" class="skill-card">
+          <span class="name">web3-job-risk-skill</span>
+          <p class="desc">Web3 job offer due-diligence — scam screen, founder background check, token economics red flags, contract clause review.</p>
+          <div class="footer">
+            <span class="gh">github.com/web3yaso ↗</span>
+            <span class="status live">● live</span>
+          </div>
+        </a>
+        <a href="https://github.com/web3yaso/stablecoin-policy" class="skill-card">
+          <span class="name">stablecoin-policy</span>
+          <p class="desc">Live stablecoin regulation tracker across 12 jurisdictions. Updated weekly. Powers stablecoin.web3law.tech.</p>
+          <div class="footer">
+            <span class="gh">github.com/web3yaso ↗</span>
+            <span class="status live">● live</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="pricing-section">
+    <div class="container">
+      <div class="eyebrow">Pricing</div>
+      <h2 class="h-section" style="margin-top:8px;">Pay-per-call, no subscriptions.</h2>
+      <p class="lede" style="margin-top: 12px; margin-bottom: 32px;">Settlement happens through the Coinbase x402 facilitator (CDP). No subscriptions, no monthly minimums. Agents pay per successful response — failures don't charge.</p>
+
+      <div class="pricing-table">
+        <table>
+          <thead>
+            <tr><th>Endpoint</th><th>Price</th><th>Settlement</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="path">GET /api/v1/reports</td><td class="price">Free</td><td>—</td></tr>
+            <tr><td class="path">GET /api/v1/reports/:slug</td><td class="price">$0.10</td><td>USDC on Base (x402)</td></tr>
+            <tr><td class="path">POST /api/v1/freeze/diagnose</td><td class="price">$1.00</td><td>USDC on Base (x402)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="pricing-note">Some reports may set a higher priceUsd in their frontmatter (e.g. premium jurisdiction-specific deep dives at $0.25-$0.50). The price returned by /api/v1/reports is always authoritative.</p>
+    </div>
+  </section>
+
+  <!-- Discover -->
+  <section class="discover-section">
+    <div class="container">
+      <div class="eyebrow">Discover</div>
+      <h2 class="h-section" style="margin-top: 8px; margin-bottom: 32px;">Build on top of the agent economy.</h2>
+      <div class="discover-grid">
+        <a href="https://docs.cdp.coinbase.com/x402/bazaar" class="discover-card">
+          <h3>x402 Bazaar <span style="font-size:14px;">↗</span></h3>
+          <p>Discover other x402-enabled APIs your agent can call. Web3Law is listed under "Legal & Compliance".</p>
+        </a>
+        <a href="https://x.com/web3law_tech" class="discover-card">
+          <h3>@web3law_tech <span style="font-size:14px;">↗</span></h3>
+          <p>Twitter / X — updates on new reports, new endpoints, and changes to the SKILL spec.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">Web3Law Intelligence</div>
+          <div class="footer-tagline">Original compliance analysis · emergency tools · pay-per-call agent API. Built by Sophie (@web3law_tech). Not a substitute for legal counsel.</div>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">For Agents</div>
+          <ul>
+            <li><a href="#">SKILL.md</a></li>
+            <li><a href="#">openapi.json</a></li>
+            <li><a href="#">llms.txt</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">Open Source</div>
+          <ul>
+            <li><a href="https://github.com/web3yaso/crypto-frozen-card">crypto-frozen-card</a></li>
+            <li><a href="https://github.com/web3yaso/web3-job-risk-skill">web3-job-risk-skill</a></li>
+            <li><a href="https://github.com/web3yaso/stablecoin-policy">stablecoin-policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">Legal</div>
+          <ul>
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Disclaimer</a></li>
+            <li><a href="#">About</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Web3Law Intelligence</span>
+        <span>Content is for reference only · not legal advice.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

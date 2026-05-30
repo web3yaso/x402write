@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Write402 — Ask a Chinese crypto compliance writer anything.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500;1,700;1,800;1,900&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ============================================================
+       Write402 · Home — centered narrow column, big display,
+       dark terminal prompt blocks. Crimson is the only accent.
+       Intentionally NOT loading tokens.css / base.css.
+       ============================================================ */
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --paper:      #f3f0e9;   /* page bg */
+      --paper-soft: #ece8df;   /* cards/inputs slightly darker */
+      --paper-card: #fffdf8;   /* white-ish */
+      --ink:        #1a1714;
+      --ink-soft:   #4a4339;
+      --ink-mute:   #8a8278;
+      --line:       #d9d2c5;
+      --line-soft:  #e6e0d4;
+      --charcoal:   #1e1b18;   /* dark prompt bg */
+      --charcoal-2: #2a2620;   /* dark prompt border / hover */
+      --crimson:    #8B1F30;
+      --crimson-hi: #A83245;
+      --crimson-on-dark: #d29ba2;  /* legible on charcoal */
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      font-feature-settings: "tnum" 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    ::selection { background: var(--crimson); color: #fff; }
+    em { font-style: italic; }
+
+    /* ============================================================
+       MASTHEAD — thin sticky bar
+       ============================================================ */
+    .mast {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(243, 240, 233, 0.92);
+      backdrop-filter: saturate(160%) blur(10px);
+      -webkit-backdrop-filter: saturate(160%) blur(10px);
+      border-bottom: 0.5px solid var(--line);
+    }
+    .mast-row {
+      max-width: 1080px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px; padding: 0 28px;
+    }
+    .brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15.5px; letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .brand .mark {
+      width: 22px; height: 22px; background: var(--ink);
+      border-radius: 5px; position: relative; flex-shrink: 0;
+    }
+    .brand .mark::after {
+      content: ""; position: absolute; inset: 5px 6px;
+      border: 1.5px solid var(--paper); border-radius: 2px;
+    }
+    .brand .mark::before {
+      content: ""; position: absolute; top: 4px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 5px;
+      border: 1.5px solid var(--paper); border-bottom: none;
+      border-radius: 3px 3px 0 0;
+    }
+    /* Wallet-login crest */
+    .wallet-crest {
+      position: relative; flex-shrink: 0;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: transparent; padding: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    /* logged-out: default brand seal */
+    .wc-default {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--crimson-hi) 0%, var(--crimson) 60%, #4a1a22 100%);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .wc-default::after {
+      content: ""; position: absolute; top: 6px; right: 7px;
+      width: 6px; height: 6px; background: #f0c14b; border-radius: 50%; opacity: .85;
+    }
+    .wallet-crest:hover .wc-default { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(139,31,48,0.12); }
+    /* logged-in: deterministic avatar */
+    .wc-avatar {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--paper-soft);
+      box-shadow: inset 0 0 0 2px var(--paper);
+      display: none;
+    }
+    .wc-dot {
+      position: absolute; right: -1px; bottom: -1px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #2f6b3f; border: 2px solid var(--paper);
+      display: none;
+    }
+    .wallet-crest.on .wc-default { display: none; }
+    .wallet-crest.on .wc-avatar { display: block; }
+    .wallet-crest.on .wc-dot { display: block; }
+    .wallet-crest.on:hover .wc-avatar { box-shadow: inset 0 0 0 2px var(--paper), 0 0 0 4px rgba(47,107,63,0.16); }
+
+    /* Wallet popover */
+    .wallet-pop {
+      position: absolute; top: calc(100% + 8px); right: 28px; z-index: 65;
+      width: 248px;
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; box-shadow: 0 18px 44px rgba(20,18,15,0.16);
+      padding: 7px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .wallet-pop.open { opacity: 1; transform: none; pointer-events: auto; }
+    .wp-state { padding: 12px 12px 4px; }
+    .wp-row { display: flex; align-items: center; gap: 11px; }
+    .wp-av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: var(--paper-soft); }
+    .wp-meta { min-width: 0; }
+    .wp-meta .wp-l1 { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .wp-meta .wp-l2 {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute);
+      margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .wp-net {
+      display: inline-flex; align-items: center; gap: 6px; margin: 12px 0 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-soft);
+    }
+    .wp-net .gdot { width: 6px; height: 6px; border-radius: 50%; background: #2f6b3f; }
+    .wp-actions { padding: 6px; border-top: 0.5px solid var(--line-soft); margin-top: 8px; }
+    .wp-btn {
+      width: 100%; text-align: left; border: none; background: transparent;
+      border-radius: 9px; padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--ink);
+      transition: background .12s; cursor: pointer;
+    }
+    .wp-btn:hover { background: var(--paper-soft); }
+    .wp-btn.danger { color: var(--crimson); }
+    .wp-connect { padding: 14px 12px 8px; }
+    .wp-connect .wp-ttl { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+    .wp-connect .wp-sub { font-size: 12px; color: var(--ink-mute); margin: 0 0 12px; line-height: 1.5; }
+    .wp-connect .wp-cta {
+      width: 100%; background: var(--ink); color: var(--paper); border: none;
+      border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .wp-connect .wp-cta:hover { background: var(--crimson); }
+
+    /* Hamburger menu */
+    .mast-row { position: relative; }
+    .mast-right { display: flex; align-items: center; gap: 14px; }
+    .menu-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 0.5px solid var(--line); background: var(--paper-card);
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: border-color .15s;
+    }
+    .menu-btn:hover { border-color: var(--ink); }
+    .menu-btn .bars, .menu-btn .bars::before, .menu-btn .bars::after {
+      display: block; width: 16px; height: 1.5px; background: var(--ink);
+      border-radius: 2px; transition: transform .2s, opacity .2s, background .2s;
+    }
+    .menu-btn .bars { position: relative; }
+    .menu-btn .bars::before { content: ""; position: absolute; top: -5px; left: 0; }
+    .menu-btn .bars::after { content: ""; position: absolute; top: 5px; left: 0; }
+    .menu-btn.open .bars { background: transparent; }
+    .menu-btn.open .bars::before { transform: translateY(5px) rotate(45deg); }
+    .menu-btn.open .bars::after { transform: translateY(-5px) rotate(-45deg); }
+    .menu-panel {
+      position: absolute; top: calc(100% + 8px); right: 28px; z-index: 60;
+      width: 234px;
+      background: var(--paper-card); border: 0.5px solid var(--line);
+      border-radius: 14px; box-shadow: 0 18px 44px rgba(20,18,15,0.16);
+      padding: 7px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .menu-panel.open { opacity: 1; transform: none; pointer-events: auto; }
+    .menu-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute);
+      padding: 9px 12px 7px;
+    }
+    .menu-panel a {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 12px; border-radius: 9px;
+      color: var(--ink); transition: background .12s;
+    }
+    .menu-panel a:hover { background: var(--paper-soft); }
+    .menu-panel a .mtxt { display: flex; flex-direction: column; }
+    .menu-panel a .mt { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+    .menu-panel a .msub { font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+    .menu-panel a .ar { color: var(--ink-mute); font-size: 14px; flex-shrink: 0; }
+    .menu-panel a:hover .ar { color: var(--crimson); }
+
+    /* Newsletter strip */
+    .news {
+      border-bottom: 0.5px solid var(--line);
+      background: var(--paper);
+    }
+    .news-inner {
+      max-width: 1080px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px; padding: 11px 28px;
+      font-size: 13px; color: var(--ink-soft);
+      position: relative;
+    }
+    .news-inner b { font-weight: 600; color: var(--ink-mute); margin-right: 4px; }
+    .news-inner a {
+      color: var(--ink); border-bottom: 1px solid var(--ink);
+      padding-bottom: 1px;
+    }
+    .news-inner a:hover { color: var(--crimson); border-color: var(--crimson); }
+    .news-close {
+      position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; color: var(--ink-mute);
+      font-size: 16px; line-height: 1;
+    }
+    .news-close:hover { color: var(--ink); }
+    @media (max-width: 600px) {
+      .news-inner { font-size: 11.5px; padding: 9px 36px 9px 16px; gap: 8px; text-align: center; }
+      .news-close { right: 12px; }
+    }
+
+    /* ============================================================
+       PAGE — centered narrow column
+       ============================================================ */
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 28px 96px;
+    }
+    @media (max-width: 600px) { main { padding: 32px 20px 64px; } }
+
+    /* Pill tab switcher */
+    .pills {
+      display: inline-flex; align-items: center;
+      background: var(--paper-soft);
+      border: 0.5px solid var(--line);
+      border-radius: 999px;
+      padding: 4px;
+      margin: 0 auto;
+      gap: 2px;
+    }
+    .pills-wrap { display: flex; justify-content: center; margin-bottom: 48px; }
+    .pill {
+      background: transparent; border: none;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13.5px; font-weight: 500;
+      color: var(--ink-soft);
+      letter-spacing: -0.005em;
+      transition: background 0.15s, color 0.15s;
+    }
+    .pill:hover { color: var(--ink); }
+    .pill.active {
+      background: var(--ink); color: var(--paper);
+      font-weight: 600;
+    }
+    .pill .soon {
+      display: inline-block; margin-left: 6px; padding: 1.5px 6px;
+      font-family: 'JetBrains Mono', monospace; font-size: 8.5px; font-weight: 600;
+      letter-spacing: 0.06em; border-radius: 999px; vertical-align: 1px;
+      background: var(--crimson); color: #fff;
+    }
+    /* coming-soon banner (Agents) */
+    .coming-wrap { text-align: center; margin: 0 0 18px; }
+    .coming-banner {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+      letter-spacing: 0.03em; color: var(--crimson);
+      background: rgba(139,31,48,0.07); border: 0.5px solid rgba(139,31,48,0.28);
+      border-radius: 999px; padding: 7px 15px;
+    }
+    .coming-banner .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--crimson); }
+
+    /* ============================================================
+       DISPLAY HEADLINE — large bold + italic emphasis
+       ============================================================ */
+    .display {
+      text-align: center;
+      font-family: 'Inter', 'Noto Sans SC', sans-serif;
+      font-weight: 800;
+      font-size: clamp(36px, 5.4vw, 56px);
+      line-height: 1.06;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      margin: 0 auto;
+      max-width: 18ch;
+    }
+    .display em {
+      font-style: italic;
+      font-weight: 900;
+    }
+    .display .accent { color: var(--crimson); }
+
+    .sub {
+      text-align: center;
+      margin: 22px auto 0;
+      max-width: 56ch;
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+    }
+    .powered {
+      text-align: center;
+      margin: 14px 0 0;
+      font-size: 13px;
+      color: var(--ink-mute);
+    }
+    .powered .dot { color: var(--ink-mute); margin: 0 6px; }
+
+    /* ============================================================
+       PANEL
+       ============================================================ */
+    .panel { display: none; margin-top: 38px; }
+    .panel.active { display: block; }
+
+    /* —— Big text input (Try-it + Writers) ——*/
+    .big-input {
+      display: flex; align-items: stretch;
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 6px 6px 22px;
+      max-width: 540px; margin: 36px auto 0;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+    .big-input input {
+      flex: 1; border: none; outline: none; background: transparent;
+      font-family: inherit; font-size: 14.5px; color: var(--ink);
+      padding: 12px 8px;
+    }
+    .big-input input::placeholder { color: var(--ink-mute); }
+    .big-input button {
+      background: var(--ink); color: var(--paper);
+      border: none;
+      padding: 0 22px;
+      border-radius: 999px;
+      font-family: inherit; font-size: 13.5px; font-weight: 600;
+      letter-spacing: -0.005em;
+      transition: background 0.15s;
+    }
+    .big-input button:hover { background: var(--crimson); }
+    .input-hint {
+      text-align: center; margin: 14px auto 0;
+      font-size: 12.5px; color: var(--ink-mute);
+      max-width: 48ch;
+    }
+
+    /* —— Section subtitle —— */
+    .sec-title {
+      margin: 56px 0 14px;
+      font-size: 14.5px; font-weight: 600;
+      color: var(--crimson);
+      letter-spacing: -0.005em;
+    }
+    .sec-title.muted { color: var(--ink); }
+
+    /* —— Example prompt cards grid —— */
+    .prompts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    @media (max-width: 600px) { .prompts-grid { grid-template-columns: 1fr; } }
+    .prompt-card {
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color 0.15s, transform 0.15s;
+      cursor: pointer;
+    }
+    .prompt-card:hover { border-color: var(--ink); transform: translateY(-1px); }
+    .prompt-card .q {
+      font-size: 13.5px; line-height: 1.5; color: var(--ink);
+    }
+    .prompt-card .ask {
+      align-self: flex-end;
+      font-size: 12.5px; color: var(--ink-mute); font-weight: 500;
+    }
+    .prompt-card:hover .ask { color: var(--crimson); }
+
+    /* —— Solution-guide cards (collected articles) —— */
+    .guide-lead {
+      font-size: 13px; color: var(--ink-mute); line-height: 1.6;
+      margin: 0 0 16px; max-width: 60ch;
+    }
+    .guide-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-top: 8px;
+    }
+    @media (max-width: 600px) { .guide-grid { grid-template-columns: 1fr; } }
+    .guide-card {
+      display: flex; flex-direction: column; gap: 9px;
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 10px;
+      padding: 16px 18px;
+      transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+    }
+    .guide-card:hover {
+      border-color: var(--ink); transform: translateY(-2px);
+      box-shadow: 0 10px 28px -16px rgba(20,18,15,0.28);
+    }
+    .guide-card .g-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .guide-card .g-cat {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; white-space: nowrap;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-mute);
+    }
+    .guide-card .g-price {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+      color: var(--crimson);
+    }
+    .guide-card .g-q {
+      font-size: 14.5px; font-weight: 600; line-height: 1.4; color: var(--ink);
+      letter-spacing: -0.005em; text-wrap: pretty;
+    }
+    .guide-card .g-how {
+      font-size: 12px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty;
+    }
+    .guide-card .g-foot {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin-top: 2px; padding-top: 11px; border-top: 0.5px solid var(--line-soft);
+    }
+    .guide-card .g-author { font-size: 11.5px; color: var(--ink-mute); }
+    .guide-card .g-modes { display: inline-flex; gap: 5px; }
+    .guide-card .g-modes .m {
+      font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 500;
+      letter-spacing: 0.04em; color: var(--ink-soft);
+      border: 0.5px solid var(--line); border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .guide-card:hover .g-modes .m:last-child { border-color: var(--crimson); color: var(--crimson); }
+
+    /* —— Supported authors chips —— */
+    .chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 8px;
+    }
+    .chip {
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .chip:hover { border-color: var(--ink); color: var(--ink); }
+    .chip .via {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--ink-mute);
+      letter-spacing: 0.02em;
+    }
+
+    /* —— Secondary action row (Try-it tab) —— */
+    .sec-actions {
+      margin-top: 56px;
+      padding-top: 28px;
+      border-top: 0.5px solid var(--line);
+      text-align: center;
+      font-size: 14px;
+      color: var(--ink-soft);
+    }
+    .sec-actions a {
+      color: var(--crimson);
+      border-bottom: 1px dotted var(--crimson);
+      padding-bottom: 1px;
+      margin: 0 8px;
+      font-weight: 500;
+    }
+    .sec-actions a:hover { border-bottom-style: solid; }
+
+    /* —— Stats cards (Writers) —— */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 56px 0 0;
+    }
+    @media (max-width: 480px) { .stats { grid-template-columns: 1fr; } }
+    .stat {
+      background: var(--paper-card);
+      border: 0.5px solid var(--line);
+      border-radius: 10px;
+      padding: 22px 22px;
+      text-align: center;
+    }
+    .stat .lbl {
+      font-size: 12.5px; color: var(--ink-mute);
+      margin-bottom: 8px;
+    }
+    .stat .val {
+      font-size: 32px; font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .stat .val.acc { color: var(--crimson); }
+    .stat .delta {
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      color: var(--ink-mute); letter-spacing: 0.02em;
+    }
+
+    /* —— Top earning table (Writers) —— */
+    .lboard-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin: 56px 0 0;
+    }
+    .lboard-head h3 {
+      margin: 0; font-size: 18px; font-weight: 700; color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .lboard-head .more {
+      font-size: 12.5px; color: var(--ink-mute);
+    }
+    .lboard-sub { font-size: 12.5px; color: var(--ink-mute); margin: 4px 0 0; }
+    .lboard {
+      margin-top: 16px;
+      border-top: 0.5px solid var(--ink-mute);
+    }
+    .lboard-cols {
+      display: grid;
+      grid-template-columns: 32px 1fr 64px 84px;
+      gap: 12px;
+      padding: 9px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.06em;
+      color: var(--ink-mute);
+      border-bottom: 0.5px solid var(--line);
+    }
+    .lboard-cols .r-r { text-align: right; }
+    .lboard-row {
+      display: grid;
+      grid-template-columns: 32px 1fr 64px 84px;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 0.5px solid var(--line);
+      align-items: center;
+    }
+    .lboard-row .rank {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--ink-mute);
+    }
+    .lboard-row .pub .name { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .lboard-row .pub .desc { font-size: 12.5px; color: var(--ink-mute); margin-top: 2px; }
+    .lboard-row .col-r {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+      color: var(--ink-soft);
+    }
+    .lboard-row .col-r.acc { color: var(--crimson); font-weight: 600; }
+    @media (max-width: 600px) {
+      .lboard-cols, .lboard-row {
+        grid-template-columns: 24px 1fr 84px;
+      }
+      .lboard-cols .c-art, .lboard-row .c-art { display: none; }
+    }
+
+    .lboard-foot {
+      margin-top: 18px; text-align: center;
+      font-size: 12.5px; color: var(--ink-mute);
+    }
+    .lboard-foot strong { color: var(--ink); }
+
+    /* —— Things you can say (Agents) —— */
+    .say-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: var(--ink-mute);
+      letter-spacing: 0.16em; text-transform: uppercase;
+      margin: 42px 0 10px;
+    }
+    .say-box {
+      background: var(--charcoal);
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px; line-height: 1.5;
+      color: #e3dccf;
+      letter-spacing: -0.005em;
+    }
+    .say-box .car { color: var(--crimson-on-dark); margin-right: 8px; }
+    .say-box .cursor {
+      display: inline-block; width: 9px; height: 15px;
+      background: var(--crimson-on-dark);
+      vertical-align: -2px;
+      margin-left: 2px;
+      animation: blink 1.1s steps(2) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* —— Agents sections (Setup, Skill bundle, Endpoints) —— */
+    .a-rule { margin: 56px 0 0; border-top: 0.5px solid var(--line); }
+    .a-sec-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--ink);
+      margin: 32px 0 0;
+    }
+    .a-sec-desc {
+      margin: 14px 0 0;
+      font-size: 14.5px; color: var(--ink-soft); line-height: 1.6;
+    }
+    .a-sec-desc strong { color: var(--ink); font-weight: 600; }
+
+    /* Provider mini-pills (inside Agents) */
+    .prov-pills {
+      display: inline-flex; align-items: center;
+      background: var(--paper-soft);
+      border: 0.5px solid var(--line);
+      border-radius: 999px;
+      padding: 4px;
+      margin: 20px 0 18px;
+      gap: 2px;
+    }
+    .prov {
+      background: transparent; border: none;
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 12.5px; font-weight: 500;
+      color: var(--ink-soft);
+    }
+    .prov:hover { color: var(--ink); }
+    .prov.active {
+      background: var(--ink); color: var(--paper);
+      font-weight: 600;
+    }
+
+    /* Dark prompt block — the dripstack signature */
+    .dprompt {
+      position: relative;
+      background: var(--charcoal);
+      border-radius: 8px;
+      padding: 18px 56px 18px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px; line-height: 1.7;
+      color: #d6cfc1;
+      white-space: pre-wrap;
+      letter-spacing: -0.005em;
+    }
+    .dprompt-lbl {
+      position: absolute; top: 13px; left: 20px;
+      font-size: 10.5px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--ink-mute);
+      pointer-events: none;
+    }
+    .dprompt .body {
+      margin-top: 22px;
+      color: var(--crimson-on-dark);
+    }
+    .dprompt .comment { color: #7a7064; }
+    .dprompt .key { color: #e8dccd; }
+    .dprompt .copy {
+      position: absolute; top: 11px; right: 12px;
+      background: transparent;
+      border: 0.5px solid #3a3530;
+      color: #b8aea0;
+      border-radius: 4px;
+      padding: 4px 9px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 500;
+      letter-spacing: 0.04em;
+      transition: all 0.15s;
+    }
+    .dprompt .copy:hover { color: #fff; border-color: #5a5450; }
+    .dprompt .copy.copied { color: var(--crimson-on-dark); border-color: var(--crimson-on-dark); }
+
+    /* —— Endpoint table (Agents §3) —— */
+    .ep-table {
+      margin-top: 14px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      border-top: 0.5px solid var(--ink-mute);
+    }
+    .ep-row {
+      display: grid;
+      grid-template-columns: 50px 1fr auto;
+      gap: 14px;
+      padding: 10px 0;
+      border-bottom: 0.5px solid var(--line);
+      align-items: center;
+    }
+    .ep-row .method {
+      color: var(--ink-mute); font-weight: 600;
+      font-size: 11px; letter-spacing: 0.06em;
+    }
+    .ep-row .method.post { color: var(--crimson); }
+    .ep-row .path { color: var(--ink); font-size: 12.5px; }
+    .ep-row .meta { color: var(--ink-mute); font-size: 11px; }
+    .ep-row:hover .path { color: var(--crimson); }
+    .ep-foot {
+      margin-top: 18px;
+      font-size: 12px; color: var(--ink-mute); text-align: center;
+    }
+    .ep-foot a { color: var(--ink); border-bottom: 1px dotted var(--ink-mute); }
+    .ep-foot a:hover { color: var(--crimson); border-color: var(--crimson); }
+    .ep-foot .sep { margin: 0 8px; color: var(--ink-mute); }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .foot {
+      border-top: 0.5px solid var(--line);
+      margin-top: 96px;
+      padding: 22px 0 40px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-mute);
+      letter-spacing: 0.02em;
+    }
+    .foot-inner {
+      max-width: 1080px; margin: 0 auto;
+      padding: 0 28px;
+      display: grid; gap: 12px;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+    }
+    .foot-l, .foot-r {
+      display: flex; flex-wrap: wrap; gap: 14px;
+    }
+    .foot-r { justify-content: flex-end; }
+    .foot-inner a:hover { color: var(--crimson); }
+    .foot-mark {
+      width: 22px; height: 22px; background: var(--ink-mute);
+      border-radius: 5px; position: relative;
+      justify-self: center;
+      opacity: 0.4;
+    }
+    .foot-mark::after {
+      content: ""; position: absolute; inset: 5px 6px;
+      border: 1.5px solid var(--paper); border-radius: 2px;
+    }
+    .foot-mark::before {
+      content: ""; position: absolute; top: 4px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 5px;
+      border: 1.5px solid var(--paper); border-bottom: none;
+      border-radius: 3px 3px 0 0;
+    }
+    @media (max-width: 600px) {
+      .foot-inner { grid-template-columns: 1fr; text-align: center; }
+      .foot-l, .foot-r { justify-content: center; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ──────────────────────────  MASTHEAD  ────────────────────────── -->
+  <header class="mast">
+    <div class="mast-row">
+      <a href="01-home.html" class="brand" id="brandHome">
+        <span class="mark"></span>
+        Write402
+      </a>
+      <div class="mast-right">
+        <button class="wallet-crest" id="walletCrest" aria-label="连接钱包" aria-expanded="false">
+          <span class="wc-default"></span>
+          <span class="wc-avatar" id="wcAvatar"></span>
+          <span class="wc-dot"></span>
+        </button>
+        <button class="menu-btn" id="menuBtn" aria-label="菜单" aria-expanded="false"><span class="bars"></span></button>
+      </div>
+      <nav class="menu-panel" id="menuPanel" aria-label="站点导航">
+        <div class="menu-eyebrow">Write402</div>
+        <a href="publish.html"><span class="mtxt"><span class="mt">发布报告</span><span class="msub">签名上链你的文章</span></span><span class="ar">→</span></a>
+        <a href="reports.html"><span class="mtxt"><span class="mt">报告目录</span><span class="msub">链上可验证内容库</span></span><span class="ar">→</span></a>
+        <a href="how-it-works.html"><span class="mtxt"><span class="mt">How it works</span><span class="msub">三方付费闭环</span></span><span class="ar">→</span></a>
+      </nav>
+      <div class="wallet-pop" id="walletPop"></div>
+    </div>
+  </header>
+
+  <!-- ──────────────────────────  NEWSLETTER STRIP  ────────────────────────── -->
+  <div class="news" id="news">
+    <div class="news-inner">
+      <span><b>Newsletter:</b> <a href="#">追踪每月合规动态 →</a></span>
+      <button class="news-close" aria-label="close" onclick="document.getElementById('news').style.display='none'">×</button>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────  MAIN  ────────────────────────── -->
+  <main>
+
+    <!-- Tab pills -->
+    <div class="pills-wrap">
+      <div class="pills" role="tablist">
+        <button class="pill active" data-tab="readers" role="tab">Try it</button>
+        <button class="pill" data-tab="writers" role="tab">For Writers</button>
+        <button class="pill" data-tab="agents" role="tab">For Agents <span class="soon">SOON</span></button>
+      </div>
+    </div>
+
+    <!-- ───────────────  PANEL · READERS · "TRY IT"  ─────────────── -->
+    <section class="panel active" id="panel-readers">
+      <h1 class="display">你的问题,<em>已经有人写过答案</em>。</h1>
+      <p class="sub">搜索你的处境,付费阅读实名律师写的对应文章,即得答案。</p>
+      <p class="powered">Powered by MPP on Tempo and x402 on Base</p>
+
+      <div class="big-input">
+        <input type="text" placeholder="我的工行卡因 OTC 出金被冻结,下一步怎么办?" />
+        <button>Find</button>
+      </div>
+      <p class="input-hint">付费阅读对应文章即得答案 · 付费直达作者</p>
+
+      <div class="sec-title" style="font-size:21px; font-weight:700;">收录文章</div>
+      <p class="guide-lead">每篇都由实名作者汇编自真实案例。付费后不仅能读到全文,还附场景 prompt —— 复制丢进你常用的 AI,帮你把文章用到自己的处境上,理解并解决问题。</p>
+      <div class="guide-grid">
+
+        <a class="guide-card" href="article.html">
+          <div class="g-top"><span class="g-cat">Enforcement · 大陆</span><span class="g-price">$0.30</span></div>
+          <div class="g-q">OTC 卖 USDT 后银行卡被冻,24 小时内该做什么?</div>
+          <div class="g-how">5 分钟区分风控/司法冻结 · 7 步应对清单 · 训诫书该不该签 · 4 个可复制 prompt</div>
+          <div class="g-foot"><span class="g-author">陈律师 · 公众号</span></div>
+        </a>
+
+        <a class="guide-card" href="article.html">
+          <div class="g-top"><span class="g-cat">Compliance · 大陆</span><span class="g-price">$0.20</span></div>
+          <div class="g-q">境内做 OTC 商家,会不会被认定帮信罪?</div>
+          <div class="g-how">最低合规门槛 · 帮信 vs 掩隐的认定边界 · 留痕清单 · 3 个可复制 prompt</div>
+          <div class="g-foot"><span class="g-author">OTC 法律日记 · 公众号</span></div>
+        </a>
+
+        <a class="guide-card" href="article.html">
+          <div class="g-top"><span class="g-cat">License · 香港</span><span class="g-price">$0.25</span></div>
+          <div class="g-q">香港 VATP 牌照:条件、时间表和资本要求?</div>
+          <div class="g-how">申请门槛拆解 · 时间线与成本 · 常见驳回理由 · 2 个可复制 prompt</div>
+          <div class="g-foot"><span class="g-author">Lex Web3 · Mirror</span></div>
+        </a>
+
+        <a class="guide-card" href="article.html">
+          <div class="g-top"><span class="g-cat">Tax · 跨境</span><span class="g-price">$0.15</span></div>
+          <div class="g-q">跨境收 USDT 当劳务报酬,境内个税怎么报?</div>
+          <div class="g-how">申报口径 · 折算与凭证 · 真实补税案例 · 2 个可复制 prompt</div>
+          <div class="g-foot"><span class="g-author">币圈合规观察 · 公众号</span></div>
+        </a>
+
+        <a class="guide-card" href="article.html">
+          <div class="g-top"><span class="g-cat">Sanctions · 链上</span><span class="g-price">$0.10</span></div>
+          <div class="g-q">钱包被加进 OFAC SDN 名单后,链上还能转出吗?</div>
+          <div class="g-how">SDN 链上后果 · 合规出口 · 误伤申诉路径 · 2 个可复制 prompt</div>
+          <div class="g-foot"><span class="g-author">Web3 合规小组 · 飞书</span></div>
+        </a>
+
+        <a class="guide-card" href="article.html">
+          <div class="g-top"><span class="g-cat">Case · 大陆</span><span class="g-price">$0.20</span></div>
+          <div class="g-q">NFT 在大陆被定性为虚拟商品的近期判例?</div>
+          <div class="g-how">判例时间线 · 定性逻辑 · 对发行方的启示 · 2 个可复制 prompt</div>
+          <div class="g-foot"><span class="g-author">CN Crypto Court · Substack</span></div>
+        </a>
+
+      </div>
+
+      <div class="sec-title muted" style="margin-top:48px;">Supported Authors</div>
+      <div class="chips">
+        <span class="chip">币圈合规观察 <span class="via">· 公众号</span></span>
+        <span class="chip">SG MAS Watcher <span class="via">· Substack</span></span>
+        <span class="chip">Lex Web3 <span class="via">· Mirror</span></span>
+        <span class="chip">ChainLaw HK <span class="via">· 公众号</span></span>
+        <span class="chip">Paige Zhao <span class="via">· Mirror</span></span>
+        <span class="chip">OTC 法律日记 <span class="via">· 公众号</span></span>
+        <span class="chip">CN Crypto Court <span class="via">· Substack</span></span>
+        <span class="chip">Web3 合规小组 <span class="via">· 飞书</span></span>
+      </div>
+
+      <div class="sec-actions">
+        找不到对应文章? <a href="reports.html">浏览全部收录</a> · <a href="#">订阅 $19/月 畅读所有作者</a>
+      </div>
+    </section>
+
+    <!-- ───────────────  PANEL · WRITERS  ─────────────── -->
+    <section class="panel" id="panel-writers">
+      <h1 class="display">你的文章已经很有价值
+现在Agent也可以付费阅读</h1>
+      <p class="sub">导入你的公众号文章,可先预览再建账户。
+我们还会为每篇自动配上场景 prompt,帮读者把文章用到自己的处境上 —— 
+真人与 Agent 同价付费阅读,款项直达你的钱包。</p>
+
+      <div class="big-input">
+        <input type="text" id="importInput" placeholder="cryptolaw_cn  ·  公众号名 / Mirror URL / Substack URL" />
+        <button id="importBtn">Import</button>
+      </div>
+      <p class="input-hint">历史文章 + 后续新发可一次性授权</p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="lbl">Total Articles Purchased</div>
+          <div class="val">12,847</div>
+          <div class="delta">+612 past 7d</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Total Earned by Authors</div>
+          <div class="val acc">$48,302.51</div>
+          <div class="delta">+$2,841 past 7d · 0% platform fee</div>
+        </div>
+      </div>
+
+      <div class="lboard-head">
+        <div>
+          <h3>Top Earning Authors</h3>
+          <p class="lboard-sub">Ranked by total earnings across paid unlocks · paid directly to wallets via x402.</p>
+        </div>
+        <span class="more">Top 10 of 47</span>
+      </div>
+
+      <div class="lboard">
+        <div class="lboard-cols">
+          <span>#</span>
+          <span>AUTHOR</span>
+          <span class="r-r c-art">ARTICLES</span>
+          <span class="r-r">EARNED</span>
+        </div>
+        <div class="lboard-row"><span class="rank">01</span><div class="pub"><div class="name">币圈合规观察</div><div class="desc">@cryptolaw_cn · 公众号 · 大陆司法实践</div></div><span class="col-r c-art">156</span><span class="col-r acc">$8,420.30</span></div>
+        <div class="lboard-row"><span class="rank">02</span><div class="pub"><div class="name">SG MAS Watcher</div><div class="desc">@sgmas_watcher · Substack · 新加坡监管</div></div><span class="col-r c-art">89</span><span class="col-r acc">$5,210.50</span></div>
+        <div class="lboard-row"><span class="rank">03</span><div class="pub"><div class="name">Lex Web3</div><div class="desc">@lex_web3 · Mirror · 香港 VATP / VASP</div></div><span class="col-r c-art">72</span><span class="col-r acc">$4,892.10</span></div>
+        <div class="lboard-row"><span class="rank">04</span><div class="pub"><div class="name">ChainLaw HK</div><div class="desc">@chainlaw_hk · 公众号 · 跨境支付/合规</div></div><span class="col-r c-art">94</span><span class="col-r acc">$4,201.85</span></div>
+        <div class="lboard-row"><span class="rank">05</span><div class="pub"><div class="name">OTC 法律日记</div><div class="desc">@otc_legal_diary · 公众号 · 帮信罪/掩饰隐瞒</div></div><span class="col-r c-art">128</span><span class="col-r acc">$3,950.40</span></div>
+        <div class="lboard-row"><span class="rank">06</span><div class="pub"><div class="name">Paige Zhao</div><div class="desc">@paige_zhao · Mirror · 稳定币立法</div></div><span class="col-r c-art">41</span><span class="col-r acc">$3,012.00</span></div>
+        <div class="lboard-row"><span class="rank">07</span><div class="pub"><div class="name">CN Crypto Court</div><div class="desc">@cn_crypto_court · Substack · 判例分析</div></div><span class="col-r c-art">66</span><span class="col-r acc">$2,710.75</span></div>
+        <div class="lboard-row"><span class="rank">08</span><div class="pub"><div class="name">Web3 合规小组</div><div class="desc">@web3_compliance · 飞书 · 制裁筛查/反洗钱</div></div><span class="col-r c-art">38</span><span class="col-r acc">$1,820.90</span></div>
+        <div class="lboard-row"><span class="rank">09</span><div class="pub"><div class="name">链上侦查笔记</div><div class="desc">@onchain_detective · 公众号 · 链上取证</div></div><span class="col-r c-art">52</span><span class="col-r acc">$1,510.20</span></div>
+        <div class="lboard-row"><span class="rank">10</span><div class="pub"><div class="name">RWA Watch CN</div><div class="desc">@rwa_watch · Mirror · 现实资产代币化</div></div><span class="col-r c-art">29</span><span class="col-r acc">$1,140.50</span></div>
+      </div>
+
+      <p class="lboard-foot"><strong>0 platform fee on the article side</strong> · settlement: real-time via x402 on Base · Coinbase CDP facilitator</p>
+    </section>
+
+    <!-- ───────────────  PANEL · AGENTS  ─────────────── -->
+    <section class="panel" id="panel-agents">
+      <div class="coming-wrap"><span class="coming-banner"><span class="pulse"></span>Agent 接入将于下一阶段开放 · 以下为功能预览</span></div>
+      <h1 class="display">
+        The best Chinese regulation analysis is behind paywalls. <em>Now let your agent read it.</em>
+      </h1>
+
+      <div class="say-lbl">Things you can say</div>
+      <div class="say-box">
+        <span class="car">&gt;</span>我朋友在杭州 OTC 出金被工行冻结,金额 12 万,人在大陆,下一步该做什么?<span class="cursor"></span>
+      </div>
+
+      <!-- §1 Wallet -->
+      <div class="a-rule"></div>
+      <div class="a-sec-num">1. Set up and fund a wallet</div>
+      <p class="a-sec-desc">
+        Your agent needs a USDC wallet on Base, funded with a few dollars to pay for reading paid articles.
+        Pick a provider your agent already supports:
+      </p>
+      <div class="prov-pills" data-provider-group="wallet">
+        <button class="prov active">AgentCash</button>
+        <button class="prov">Coinbase</button>
+        <button class="prov">Circle</button>
+        <button class="prov">Tempo</button>
+      </div>
+
+      <div class="dprompt">
+        <span class="dprompt-lbl">Setup Prompt</span>
+        <button class="copy">copy</button>
+<div class="body">Read https://agentcash.io/SKILL.md and set up an AgentCash Wallet.
+Fund it with at least 5 USDC on Base. Save the wallet address and
+signing key in your local secrets.</div>
+      </div>
+
+      <!-- §2 Load the bundle -->
+      <div class="a-sec-num" style="margin-top:48px;">2. Load the Write402 article index</div>
+      <p class="a-sec-desc">
+        Fetch our <strong>SKILL.md</strong> as raw context. Your agent learns which articles exist, what each costs,
+        and how to pay to read one — every paid read returns the full markdown <strong>plus the article's scenario
+        prompts and citation metadata</strong>, ready to drop into your workflow.
+      </p>
+
+      <div class="dprompt">
+        <span class="dprompt-lbl">Setup Prompt</span>
+        <button class="copy">copy</button>
+<div class="body">Fetch https://write402.xyz/SKILL.md as raw context (do not summarize)
+and follow the instructions. Use agentcash for x402 payments.</div>
+      </div>
+
+      <!-- §3 Call endpoints directly -->
+      <div class="a-sec-num" style="margin-top:48px;">3. Or call endpoints directly</div>
+      <p class="a-sec-desc">
+        All paths are in <a href="#" style="color:var(--crimson);border-bottom:1px dotted currentColor;">openapi.json</a>.
+        x402 price is returned in the <code style="font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--paper-soft);padding:1px 4px;border-radius:3px;">402 Payment Required</code> header — your agent
+        pays and retries, no API key needed. A paid read returns the article's full markdown, its prompts and citations.
+      </p>
+
+      <div class="ep-table">
+        <div class="ep-row"><span class="method">GET</span><span class="path">/v1/articles/search?q=&amp;jurisdiction=</span><span class="meta">$0.002</span></div>
+        <div class="ep-row"><span class="method">GET</span><span class="path">/v1/articles/{slug}</span><span class="meta">author-set · $0.05+</span></div>
+        <div class="ep-row"><span class="method">GET</span><span class="path">/v1/articles/{slug}/prompts</span><span class="meta">included</span></div>
+        <div class="ep-row"><span class="method">GET</span><span class="path">/v1/articles/{slug}/citations</span><span class="meta">included</span></div>
+        <div class="ep-row"><span class="method">GET</span><span class="path">/v1/authors</span><span class="meta">free</span></div>
+        <div class="ep-row"><span class="method post">POST</span><span class="path">/v1/chat</span><span class="meta">$0.001 / 1k tok</span></div>
+      </div>
+      <p class="ep-foot">
+        <a href="#">openapi.json</a><span class="sep">·</span>
+        <a href="#">SKILL.md</a><span class="sep">·</span>
+        <a href="#">llms.txt</a><span class="sep">·</span>
+        <a href="#">x402scan</a><span class="sep">·</span>
+        <a href="#">mppscan</a>
+      </p>
+    </section>
+  </main>
+
+  <!-- ──────────────────────────  FOOTER  ────────────────────────── -->
+  <footer class="foot">
+    <div class="foot-inner">
+      <div class="foot-l">
+        <a href="index.html">home</a>
+        <a href="#">about</a>
+        <a href="#">contact</a>
+        <a href="#">openapi</a>
+        <a href="#">skill</a>
+        <a href="#">llms</a>
+      </div>
+      <div class="foot-mark" aria-hidden="true"></div>
+      <div class="foot-r">
+        <a href="#">mppscan</a>
+        <a href="#">x402scan</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ──────────────────────────  JS  ────────────────────────── -->
+  <script>
+    // Tab switcher
+    const pills = document.querySelectorAll('.pill');
+    const panels = document.querySelectorAll('.panel');
+    pills.forEach(p => {
+      p.addEventListener('click', () => {
+        pills.forEach(x => x.classList.remove('active'));
+        panels.forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+        const key = p.getAttribute('data-tab');
+        document.getElementById('panel-' + key).classList.add('active');
+        // scroll to top of main on tab change
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    // Provider toggles
+    document.querySelectorAll('[data-provider-group]').forEach(group => {
+      const btns = group.querySelectorAll('.prov');
+      btns.forEach(b => b.addEventListener('click', () => {
+        btns.forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      }));
+    });
+
+    // Copy buttons inside dark prompt blocks
+    document.querySelectorAll('.dprompt .copy').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const block = btn.closest('.dprompt');
+        const body = block.querySelector('.body');
+        const txt = body ? body.innerText : block.innerText.replace(/^copy\s*/i, '').trim();
+        navigator.clipboard.writeText(txt).then(() => {
+          const orig = btn.textContent;
+          btn.textContent = 'copied';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1400);
+        }).catch(() => {});
+      });
+    });
+
+    // Import (For Writers) → go to /publish
+    const importBtn = document.getElementById('importBtn');
+    if (importBtn) {
+      importBtn.addEventListener('click', () => { window.location.href = 'publish.html'; });
+      const importInput = document.getElementById('importInput');
+      if (importInput) importInput.addEventListener('keydown', e => { if (e.key === 'Enter') window.location.href = 'publish.html'; });
+    }
+
+    // Readers "Find" → route to the matching article (demo: the OTC report)
+    (function () {
+      const wrap = document.querySelector('#panel-readers .big-input');
+      if (!wrap) return;
+      const btn = wrap.querySelector('button');
+      const inp = wrap.querySelector('input');
+      const go = () => { window.location.href = 'article.html'; };
+      if (btn) btn.addEventListener('click', go);
+      if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    })();
+    // ── Hamburger menu ──
+    (function () {
+      const mb = document.getElementById('menuBtn');
+      const mp = document.getElementById('menuPanel');
+      if (!mb || !mp) return;
+      function closeMenu() { mp.classList.remove('open'); mb.classList.remove('open'); mb.setAttribute('aria-expanded', 'false'); }
+      mb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = mp.classList.toggle('open');
+        mb.classList.toggle('open', open);
+        mb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', (e) => { if (!mp.contains(e.target) && !mb.contains(e.target)) closeMenu(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    })();
+
+    // ── Brand logo: scroll to top instead of reloading (already home) ──
+    (function () {
+      const b = document.getElementById('brandHome');
+      if (b) b.addEventListener('click', (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    })();
+
+    // ── Wallet login crest ──
+    (function () {
+      const KEY = 'web3law_wallet';
+      const DEMO = '0x7C3aE9d4b18F206c8B9b4c5e2D1a3F7e90C4bA2f';
+      const crest = document.getElementById('walletCrest');
+      const pop = document.getElementById('walletPop');
+      const avatar = document.getElementById('wcAvatar');
+      if (!crest || !pop) return;
+      const short = a => a.slice(0,6) + '…' + a.slice(-4);
+      function gradient(a){
+        const h1 = parseInt(a.slice(2,5),16)%360, h2 = parseInt(a.slice(6,9),16)%360, h3 = parseInt(a.slice(10,13),16)%360;
+        return 'conic-gradient(from 30deg, hsl('+h1+' 58% 52%), hsl('+h2+' 62% 44%), hsl('+h3+' 56% 56%), hsl('+h1+' 58% 52%))';
+      }
+      function render(){
+        const addr = localStorage.getItem(KEY);
+        if (addr) {
+          crest.classList.add('on');
+          crest.setAttribute('aria-label', '账户 ' + short(addr));
+          avatar.style.background = gradient(addr);
+          pop.innerHTML =
+            '<div class="wp-state"><div class="wp-row"><span class="wp-av" style="background:'+gradient(addr)+'"></span>'+
+            '<div class="wp-meta"><div class="wp-l1">已连接</div><div class="wp-l2">'+addr+'</div></div></div>'+
+            '<div class="wp-net"><span class="gdot"></span>Base Sepolia · 已验证</div></div>'+
+            '<div class="wp-actions"><button class="wp-btn" data-act="copy">复制地址</button>'+
+            '<button class="wp-btn danger" data-act="disconnect">断开连接</button></div>';
+        } else {
+          crest.classList.remove('on');
+          crest.setAttribute('aria-label', '连接钱包');
+          pop.innerHTML =
+            '<div class="wp-connect"><p class="wp-ttl">连接钱包</p>'+
+            '<p class="wp-sub">连接后即可签名发布、付费解锁,头像将变为你的链上身份。</p>'+
+            '<button class="wp-cta" data-act="connect">连接钱包</button></div>';
+        }
+      }
+      function close(){ pop.classList.remove('open'); crest.setAttribute('aria-expanded','false'); }
+      crest.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const mp = document.getElementById('menuPanel'), mb = document.getElementById('menuBtn');
+        if (mp) mp.classList.remove('open');
+        if (mb) { mb.classList.remove('open'); mb.setAttribute('aria-expanded','false'); }
+        const open = pop.classList.toggle('open');
+        crest.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      pop.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-act]'); if (!b) return;
+        const act = b.dataset.act;
+        if (act === 'connect') { localStorage.setItem(KEY, DEMO); render(); }
+        else if (act === 'disconnect') { localStorage.removeItem(KEY); render(); close(); }
+        else if (act === 'copy') {
+          if (navigator.clipboard) navigator.clipboard.writeText(localStorage.getItem(KEY) || '');
+          b.textContent = '已复制'; setTimeout(() => { b.textContent = '复制地址'; }, 1300);
+        }
+      });
+      document.addEventListener('click', (e) => { if (!pop.contains(e.target) && !crest.contains(e.target)) close(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      render();
+    })();
+  </script>
+
+</body>
+</html>

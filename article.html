@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OTC 收 USDT 银行卡被冻 — Write402</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700;900&family=Spectral:ital,wght@0,400;0,500;0,600;0,800;1,400&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* ============================================================
+       Write402 · Article
+       Human mode  → editorial magazine layout (light, serif, TOC rail)
+       Agent mode  → black terminal / markdown document
+       Toggle bottom-right switches the whole shell.
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      /* editorial (human) */
+      --paper:     #faf8f2;
+      --paper-2:   #ffffff;
+      --paper-3:   #f0ece1;
+      --ink:       #181511;
+      --ink-2:     #38332b;
+      --ink-3:     #6f685c;
+      --ink-4:     #a49c8d;
+      --rule:      #181511;
+      --line:      #e4ddcf;
+      --line-soft: #ece6d8;
+      --crimson:   #8B1F30;
+      --crimson-2: #a83245;
+      --green:     #2f6b3f;
+      --serif:  'Spectral', 'Noto Serif SC', Georgia, serif;
+      --serif-cjk: 'Noto Serif SC', 'Spectral', Georgia, serif;
+      --sans:   'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      --mono:   'JetBrains Mono', ui-monospace, monospace;
+
+      /* terminal (agent) */
+      --term-bg:    #09090a;
+      --term-bg-2:  #131315;
+      --term-line:  #26262a;
+      --term-line2: #3a3a40;
+      --term-txt:   #cfcabf;
+      --term-hi:    #f1ece0;
+      --term-mute:  #76726a;
+      --term-faint: #514e48;
+      --rose:       #d29ba2;
+      --rose-hi:    #e6b6bb;
+      --term-green: #8fbf9a;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--paper); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    ::selection { background: var(--crimson); color: #fff; }
+
+    /* top-level shells */
+    [data-mode] { display: none; }
+    body.mode-human [data-mode="human"] { display: block; }
+    body.mode-agent [data-mode="agent"] { display: block; }
+    body.mode-agent { background: var(--term-bg); }
+
+    /* lock / unlock gating */
+    .unlock-only { display: none; }
+    body.unlocked .unlock-only { display: block; }
+    body.unlocked .lock-only { display: none; }
+
+    /* ============================================================
+       HUMAN · editorial
+       ============================================================ */
+    .hm { color: var(--ink); font-family: var(--sans); }
+    .hm-mast {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 30px 44px; max-width: 1280px; margin: 0 auto;
+    }
+    .hm-brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: 'Inter', var(--sans); font-weight: 700; font-size: 16px;
+      letter-spacing: -0.01em; color: var(--ink);
+    }
+    .hm-brand .mark { width: 22px; height: 22px; background: var(--ink); border-radius: 5px; position: relative; flex-shrink: 0; }
+    .hm-brand .mark::after { content: ""; position: absolute; inset: 5px 6px; border: 1.5px solid var(--paper); border-radius: 2px; }
+    .hm-brand .mark::before { content: ""; position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 5px; border: 1.5px solid var(--paper); border-bottom: none; border-radius: 3px 3px 0 0; }
+    .hm-back { font-size: 13px; color: var(--ink-3); }
+    .hm-back:hover { color: var(--crimson); }
+
+    .hm-grid {
+      max-width: 1180px; margin: 0 auto; padding: 10px 44px 200px;
+      display: grid; grid-template-columns: 250px minmax(0, 1fr);
+      gap: 64px; align-items: start;
+    }
+    @media (max-width: 940px) {
+      .hm-grid { grid-template-columns: 1fr; gap: 0; padding: 10px 28px 180px; }
+      .hm-toc { display: none; }
+    }
+
+    /* —— TOC rail —— */
+    .hm-toc { position: sticky; top: 40px; padding-top: 64px; }
+    .hm-toc nav { position: relative; }
+    .hm-toc nav::before {
+      content: ""; position: absolute; left: 5px; top: 6px; bottom: 6px;
+      width: 1px; background: var(--line);
+    }
+    .toc-item {
+      position: relative; display: block; padding: 0 0 26px 26px;
+      font-size: 14px; line-height: 1.4; color: var(--ink-4);
+      transition: color .15s;
+    }
+    .toc-item:last-child { padding-bottom: 0; }
+    .toc-item::before {
+      content: ""; position: absolute; left: 0; top: 4px;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: var(--paper); border: 1px solid var(--line);
+      transition: border-color .15s, background .15s;
+    }
+    .toc-item:hover { color: var(--ink-2); }
+    .toc-item.active { color: var(--ink); }
+    .toc-item.active::before { border-color: var(--crimson); background: var(--crimson); }
+    .toc-item .tn { font-variant-numeric: tabular-nums; }
+
+    /* —— article column —— */
+    .hm-article { max-width: 720px; }
+    .hm-pub {
+      font-family: var(--sans); font-size: 14px; color: var(--ink-3);
+      padding-top: 64px;
+    }
+    .hm-rule { border: none; border-top: 2px solid var(--rule); margin: 16px 0 56px; }
+    .hm-title {
+      font-family: var(--serif); font-weight: 800;
+      font-size: clamp(46px, 7vw, 84px); line-height: 1.02;
+      letter-spacing: -0.015em; color: var(--ink);
+      margin: 0 0 24px;
+    }
+    .hm-title .cjk { font-family: var(--serif-cjk); font-weight: 900; letter-spacing: 0.01em; }
+    .hm-deck {
+      font-family: var(--serif); font-weight: 400;
+      font-size: clamp(21px, 2.6vw, 28px); line-height: 1.4;
+      color: var(--ink-2); margin: 0 0 36px; max-width: 24ch;
+    }
+    .hm-byline { display: flex; align-items: center; gap: 14px; margin: 0 0 8px; }
+    .hm-av {
+      width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+      background: var(--crimson); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif-cjk); font-weight: 700; font-size: 21px;
+    }
+    .hm-au-name { font-family: var(--serif); font-size: 19px; color: var(--ink); line-height: 1.2; }
+    .hm-au-role { font-size: 13.5px; color: var(--ink-3); margin-top: 2px; }
+
+    /* prose */
+    .hm-body { margin-top: 44px; }
+    .hm-body p {
+      font-family: var(--serif-cjk); font-weight: 400;
+      font-size: 20px; line-height: 1.78; color: var(--ink-2);
+      margin: 0 0 28px; text-wrap: pretty;
+    }
+    .hm-body p.lead::first-letter {
+      float: left; font-family: var(--serif); font-weight: 800;
+      font-size: 4.4em; line-height: 0.82; padding: 0.06em 0.14em 0 0; color: var(--crimson);
+    }
+    .hm-body strong { font-weight: 700; color: var(--ink); }
+    .hm-body em { font-style: italic; }
+    .hm-h2 {
+      font-family: var(--serif-cjk); font-weight: 700;
+      font-size: 28px; line-height: 1.3; color: var(--ink);
+      margin: 52px 0 20px; letter-spacing: -0.005em;
+      display: flex; gap: 16px; align-items: baseline;
+    }
+    .hm-h2 .n {
+      font-family: var(--mono); font-size: 15px; font-weight: 500;
+      color: var(--crimson); flex-shrink: 0;
+    }
+    .hm-body table { width: 100%; border-collapse: collapse; margin: 8px 0 28px; font-family: var(--sans); }
+    .hm-body th, .hm-body td {
+      text-align: left; padding: 13px 14px; vertical-align: top;
+      border-bottom: 1px solid var(--line); font-size: 15px; line-height: 1.55;
+    }
+    .hm-body th { font-weight: 700; color: var(--ink); border-bottom-color: var(--ink); }
+    .hm-body td { color: var(--ink-2); }
+    .hm-body td:first-child { color: var(--ink-3); white-space: nowrap; }
+    ul.acts { list-style: none; margin: 8px 0 28px; padding: 0; }
+    ul.acts li {
+      position: relative; padding-left: 30px; margin: 14px 0;
+      font-family: var(--serif-cjk); font-size: 19px; line-height: 1.7; color: var(--ink-2);
+    }
+    ul.acts li::before { position: absolute; left: 0; top: 0; font-weight: 700; font-family: var(--sans); }
+    ul.acts li.do::before { content: "✓"; color: var(--green); }
+    ul.acts li.dont::before { content: "✕"; color: var(--crimson); }
+    ul.acts li strong { color: var(--ink); }
+
+    /* paywall (human) */
+    .teaser-fade {
+      height: 140px; margin-top: -140px; position: relative; z-index: 1;
+      background: linear-gradient(180deg, rgba(250,248,242,0) 0%, var(--paper) 82%);
+      pointer-events: none;
+    }
+    .pw {
+      background: var(--paper-2);
+      border: 1.5px solid var(--crimson);
+      border-radius: 16px; padding: 34px 36px;
+      box-shadow: 0 30px 70px -36px rgba(139,31,48,0.4);
+      margin-top: -16px; position: relative; z-index: 2;
+    }
+    .pw-lock {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--crimson); background: rgba(139,31,48,0.08);
+      padding: 5px 11px; border-radius: 999px;
+    }
+    .pw-lock svg { width: 12px; height: 12px; }
+    .pw-h { font-family: var(--serif-cjk); font-weight: 700; font-size: 22px; line-height: 1.4; color: var(--ink); margin: 16px 0 8px; }
+    .pw-meta { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); margin: 0 0 22px; }
+    .pw-price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+    .pw-price { font-family: var(--serif); font-weight: 800; font-size: 40px; color: var(--crimson); line-height: 1; }
+    .pw-price-note { font-size: 13px; color: var(--ink-3); }
+    .pw-cta {
+      width: 100%; background: var(--crimson); color: #fff; border: none;
+      border-radius: 11px; padding: 16px; font-family: var(--sans); font-size: 15.5px; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      transition: background .15s;
+    }
+    .pw-cta:hover { background: var(--crimson-2); }
+    .pw-cta svg { width: 16px; height: 16px; }
+    .pw-fine { font-size: 12px; color: var(--ink-3); text-align: center; margin: 14px 0 0; line-height: 1.6; }
+    .pw-fine strong { color: var(--crimson); }
+
+    .unlocked-note {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(47,107,63,0.08); border: 1px solid rgba(47,107,63,0.28);
+      border-radius: 11px; padding: 13px 16px; margin: 40px 0 8px;
+      font-size: 13.5px; color: var(--green); font-family: var(--sans);
+    }
+    .unlocked-note svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    /* prompt cards (human) */
+    .prompts { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+    .pcard {
+      background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px;
+      padding: 20px 22px;
+    }
+    .pcard-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+    .pcard-title { font-family: var(--serif-cjk); font-weight: 700; font-size: 18px; color: var(--ink); }
+    .pcard-desc { font-family: var(--sans); font-size: 14px; color: var(--ink-3); margin-top: 5px; line-height: 1.6; max-width: 48ch; }
+    .copy-btn {
+      flex-shrink: 0; background: var(--ink); color: var(--paper); border: none;
+      border-radius: 8px; padding: 9px 15px; font-family: var(--sans); font-size: 13px; font-weight: 600;
+      white-space: nowrap; transition: background .15s;
+    }
+    .copy-btn:hover { background: var(--crimson); }
+    .copy-btn.copied { background: var(--green); }
+    .pcard-body {
+      margin-top: 16px; background: var(--paper-3); border-radius: 8px;
+      padding: 15px 17px; font-family: var(--mono); font-size: 12.5px; line-height: 1.7;
+      color: var(--ink-2); white-space: pre-wrap; word-break: break-word;
+    }
+    .pcard-body .ph { color: var(--crimson); }
+    .hm-run {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin-top: 22px; font-family: var(--sans); font-size: 13px; color: var(--ink-3);
+    }
+    .hm-run a {
+      border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; color: var(--ink-2);
+      transition: all .15s;
+    }
+    .hm-run a:hover { border-color: var(--crimson); color: var(--crimson); }
+
+    /* ============================================================
+       AGENT · terminal
+       ============================================================ */
+    .ag {
+      color: var(--term-txt); font-family: var(--mono);
+      font-size: 13.5px; line-height: 1.75; letter-spacing: -0.003em;
+    }
+    .ag .han { font-family: var(--mono), 'Noto Sans SC'; }
+    .ag-mast { max-width: 1180px; margin: 0 auto; padding: 30px 44px 0; }
+    .ag-brand { display: inline-flex; align-items: center; gap: 10px; font-family: 'Inter', var(--sans); font-weight: 700; font-size: 16px; color: var(--term-hi); letter-spacing: -0.01em; }
+    .ag-brand .mark { width: 22px; height: 22px; background: var(--term-hi); border-radius: 5px; position: relative; flex-shrink: 0; }
+    .ag-brand .mark::after { content: ""; position: absolute; inset: 5px 6px; border: 1.5px solid var(--term-bg); border-radius: 2px; }
+    .ag-brand .mark::before { content: ""; position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 5px; border: 1.5px solid var(--term-bg); border-bottom: none; border-radius: 3px 3px 0 0; }
+    .ag-wrap { max-width: 760px; margin: 0 auto; padding: 36px 44px 200px; }
+    @media (max-width: 600px) { .ag-wrap, .ag-mast { padding-left: 22px; padding-right: 22px; } }
+
+    .ag-cmd { color: var(--term-mute); margin: 0 0 30px; }
+    .ag-cmd .d { color: var(--rose); margin-right: 8px; }
+    .ag-title { font-size: 22px; font-weight: 700; color: var(--term-hi); margin: 0 0 8px; line-height: 1.35; }
+    .ag-title .hash { color: var(--rose); margin-right: 12px; }
+    .ag-title .ms { color: var(--rose); }
+    .ag-comp { color: var(--term-mute); font-size: 12.5px; margin: 0 0 26px; }
+    .ag-comp .pct { color: var(--term-faint); margin-right: 8px; }
+    .ag-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+    .ag-act {
+      background: transparent; border: 1px dashed var(--term-line2); border-radius: 4px;
+      padding: 8px 14px; font-size: 11.5px; font-weight: 500; color: var(--term-txt);
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .ag-act:hover { border-color: var(--rose); color: var(--rose-hi); }
+    .ag-act.primary { border-style: solid; background: var(--term-bg-2); color: var(--term-hi); }
+    .ag-act.primary:hover { border-color: var(--rose); }
+    .ag-sec { margin-top: 0; padding-top: 30px; border-top: 1px dashed var(--term-line); }
+    .ag-sec.first { border-top: none; padding-top: 36px; }
+    .ag-h2 { font-size: 14px; font-weight: 600; color: var(--term-hi); margin: 0 0 4px; }
+    .ag-h2 .hash { color: var(--rose); margin-right: 9px; }
+    .ag-p { color: var(--term-txt); font-size: 13.5px; line-height: 1.8; margin: 16px 0 0; max-width: 64ch; }
+    .ag-p strong { color: var(--term-hi); font-weight: 600; }
+    .ag-p .acc { color: var(--rose); }
+    ol.ag-steps { margin: 16px 0 0; padding: 0; list-style: none; counter-reset: s; max-width: 60ch; }
+    ol.ag-steps li { position: relative; padding-left: 30px; margin: 10px 0; counter-increment: s; line-height: 1.7; }
+    ol.ag-steps li::before { content: counter(s) "."; position: absolute; left: 0; color: var(--rose); font-weight: 600; }
+    .ag-block {
+      position: relative; background: var(--term-bg-2); border: 1px solid var(--term-line);
+      border-radius: 8px; padding: 38px 18px 18px; margin: 18px 0 0; font-size: 12px; line-height: 1.75;
+    }
+    .ag-block .lbl {
+      position: absolute; top: 13px; left: 18px; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--term-mute);
+    }
+    .ag-block .mini {
+      position: absolute; top: 11px; right: 11px;
+      background: transparent; border: 1px dashed var(--term-line2); color: var(--term-mute);
+      border-radius: 4px; padding: 4px 10px; font-size: 10.5px; font-weight: 500; transition: all .15s;
+    }
+    .ag-block .mini:hover { color: var(--rose-hi); border-color: var(--rose); }
+    .ag-block .mini.copied { color: var(--term-green); border-color: var(--term-green); border-style: solid; }
+    .ag-block .body { color: var(--term-txt); white-space: pre-wrap; word-break: break-word; }
+    .ag-block .body .url { color: var(--rose); text-decoration: underline; text-underline-offset: 2px; }
+    .ag-block .body .key { color: var(--term-hi); }
+    .ag-block .body .acc { color: var(--rose); }
+
+    .ag-pw {
+      background: linear-gradient(180deg, rgba(210,155,162,0.05), rgba(210,155,162,0.02));
+      border: 1px solid var(--term-line2); border-radius: 10px; padding: 22px; margin: 18px 0 0;
+    }
+    .ag-pw .lock { display: inline-flex; align-items: center; gap: 7px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rose); margin-bottom: 12px; }
+    .ag-pw .lock svg { width: 11px; height: 11px; }
+    .ag-pw .h { font-size: 13.5px; color: var(--term-hi); font-weight: 600; line-height: 1.55; margin: 0; max-width: 54ch; }
+    .ag-pw .meta { font-size: 11.5px; color: var(--term-mute); margin: 10px 0 18px; }
+    .ag-pw .prow { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+    .ag-pw .price { font-size: 30px; font-weight: 700; color: var(--rose); }
+    .ag-pw .pnote { font-size: 11.5px; color: var(--term-mute); }
+    .ag-pw .cta {
+      width: 100%; background: var(--rose); color: #1a0c0f; border: none; border-radius: 7px;
+      padding: 13px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background .15s;
+    }
+    .ag-pw .cta:hover { background: var(--rose-hi); }
+    .ag-pw .cta svg { width: 15px; height: 15px; }
+    .ag-pw .fine { font-size: 10.5px; color: var(--term-mute); margin: 12px 0 0; text-align: center; line-height: 1.6; }
+    .ag-pw .fine strong { color: var(--rose); }
+    .ag-unlocked { display: flex; align-items: center; gap: 9px; background: rgba(143,191,154,0.07); border: 1px dashed rgba(143,191,154,0.4); border-radius: 7px; padding: 11px 14px; margin: 18px 0 0; font-size: 11.5px; color: var(--term-green); }
+    .ag-unlocked svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    .ag-prompts { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+    .ag-pc { background: var(--term-bg-2); border: 1px solid var(--term-line); border-radius: 8px; padding: 16px 18px; }
+    .ag-pc-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .ag-pc .t { font-size: 13px; font-weight: 600; color: var(--term-hi); }
+    .ag-pc .d { font-size: 12px; color: var(--term-mute); margin-top: 5px; line-height: 1.6; max-width: 46ch; }
+    .ag-pc .cp { flex-shrink: 0; background: transparent; border: 1px dashed var(--term-line2); color: var(--term-txt); border-radius: 5px; padding: 8px 13px; font-size: 11px; font-weight: 500; white-space: nowrap; transition: all .15s; }
+    .ag-pc .cp:hover { color: var(--rose-hi); border-color: var(--rose); }
+    .ag-pc .cp.copied { color: var(--term-green); border-color: var(--term-green); border-style: solid; }
+    .ag-pc .pre { margin-top: 14px; background: var(--term-bg); border: 1px solid var(--term-line); border-radius: 6px; padding: 13px 15px; font-size: 11.5px; line-height: 1.7; color: var(--term-txt); white-space: pre-wrap; word-break: break-word; }
+    .ag-pc .pre .ph { color: var(--rose); }
+    .ag-tail { margin-top: 56px; color: var(--term-mute); }
+    .ag-tail .d { color: var(--rose); margin-right: 8px; }
+    .ag-tail .cur { display: inline-block; width: 8px; height: 15px; background: var(--rose); vertical-align: -2px; margin-left: 1px; animation: blink 1.1s steps(2) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ============================================================
+       Floating Human / Agent toggle (bottom-right, dark)
+       ============================================================ */
+    .mode-toggle {
+      position: fixed; bottom: 26px; right: 32px; z-index: 60;
+      display: inline-flex; align-items: center;
+      background: #16161a; border: 1px solid #2c2c32;
+      border-radius: 999px; padding: 5px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    }
+    .mode-toggle button {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; border: none; padding: 9px 20px; border-radius: 999px;
+      font-family: var(--sans); font-size: 13.5px; font-weight: 500; color: #8b8b93;
+      transition: color .15s, background .15s;
+    }
+    .mode-toggle button svg { width: 14px; height: 14px; }
+    .mode-toggle button.active { background: #f3f0ea; color: #16161a; font-weight: 600; }
+    @media (max-width: 600px) { .mode-toggle { right: 50%; transform: translateX(50%); } }
+  </style>
+</head>
+<body class="mode-human">
+
+  <!-- ════════════════════ HUMAN · EDITORIAL ════════════════════ -->
+  <div class="hm" data-mode="human">
+    <header class="hm-mast">
+      <a href="01-home.html" class="hm-brand"><span class="mark"></span>Write402</a>
+      <a href="01-home.html" class="hm-back">← 收录目录</a>
+    </header>
+
+    <div class="hm-grid">
+      <!-- TOC rail -->
+      <aside class="hm-toc">
+        <nav id="toc">
+          <a class="toc-item active" href="#s1"><span class="tn">1.</span> 这篇解决什么</a>
+          <a class="toc-item" href="#s2"><span class="tn">2.</span> 5 分钟区分冻结类型</a>
+          <a class="toc-item" href="#s3"><span class="tn">3.</span> 卡冻 24 小时：7 个动作</a>
+          <a class="toc-item" href="#s4"><span class="tn">4.</span> 训诫书与笔录</a>
+          <a class="toc-item" href="#s5"><span class="tn">5.</span> 退赔谈判底线</a>
+        </nav>
+      </aside>
+
+      <!-- Article -->
+      <article class="hm-article" data-screen-label="Article · Human">
+        <div class="hm-pub">发布于 2026 年 5 月 21 日 · 阅读约 8 分钟</div>
+        <hr class="hm-rule" />
+        <h1 class="hm-title"><span class="cjk">OTC 收 USDT</span><br /><span class="cjk">银行卡被冻</span></h1>
+        <p class="hm-deck">银行卡在 OTC 出金后被冻结，第一时间到底该怎么做。</p>
+        <div class="hm-byline">
+          <span class="hm-av">陈</span>
+          <div>
+            <div class="hm-au-name">陈律师</div>
+            <div class="hm-au-role">实名律师 · 公众号「币圈刑辩观察」</div>
+          </div>
+        </div>
+
+        <div class="hm-body">
+          <!-- §1 -->
+          <section id="s1">
+            <p class="lead">过去 18 个月，我们追踪了 23 起在 OTC 卖出 USDT 之后银行卡被冻结的真实案例。涉案金额从 8,000 元到 120 万元不等，其中 17 起通过币安、欧易的 P2P 完成交易。</p>
+            <p>最终结局分布大致是：12 起在 72 小时内自动解冻，6 起经书面沟通后解冻，3 起进入退赔程序，2 起立案进入刑事程序。这篇不打算告诉你「千万别玩 OTC」—— 那是事后诸葛亮。它要回答的是一个更具体的问题：<strong>卡刚被冻的那 24 小时里，每一步该做什么、不该做什么</strong>，并且每一步都对应到具体案例。</p>
+          </section>
+
+          <!-- §2 -->
+          <h2 class="hm-h2" id="s2"><span class="n">02</span>5 分钟区分：银行风控 vs 司法冻结</h2>
+          <p>这是所有后续判断的前提。两种冻结的应对路径<strong>完全相反</strong>，方向搞反，会白白浪费 48 小时的黄金窗口。下面这张表来自 23 起案例的共性归纳：</p>
+          <table>
+            <thead><tr><th>维度</th><th>银行风控冻结</th><th>司法冻结</th></tr></thead>
+            <tbody>
+              <tr><td>触发方</td><td>银行 / 支付机构风控</td><td>外地公安持冻结令</td></tr>
+              <tr><td>典型时限</td><td>24–72 小时多自动解除</td><td>临时 3–7 天，正式最长 6 个月</td></tr>
+              <tr><td>柜台查询</td><td>多能查到风控原因</td><td>告知办案机关 + 案件编号</td></tr>
+              <tr><td>第一步</td><td>等待 + 不再触发新风控</td><td>立即固定证据 + 主动联系</td></tr>
+            </tbody>
+          </table>
+          <p>分辨方法的核心动作是<strong>带身份证去开户行柜台</strong>，让柜员明确告诉你冻结类型与冻结机关。手机银行通常只显示「司法协助冻结」或「风控冻结」两类标签，但柜台能进一步……</p>
+
+          <!-- paywall -->
+          <div class="lock-only">
+            <div class="teaser-fade"></div>
+            <div class="pw">
+              <span class="pw-lock">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                付费阅读 · 已读 24%
+              </span>
+              <p class="pw-h">解锁后读完 §03–§05 全文：7 步应对清单、训诫书风险判断、退赔谈判底线。</p>
+              <p class="pw-meta">~ 8 分钟读完 · 23 个真实案例编号 · 真人与 Agent 同价</p>
+              <div class="pw-price-row">
+                <span class="pw-price">$0.30</span>
+                <span class="pw-price-note">USDC on Base · 一次付费永久可读</span>
+              </div>
+              <button class="pw-cta" id="unlockBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                用钱包付 $0.30 解锁全文
+              </button>
+              <p class="pw-fine">付费后 <strong>$0.30（100%）</strong>直达陈律师钱包 · 平台 0 抽成 · 不存储私钥 · 钱包不变可永久重读</p>
+            </div>
+          </div>
+
+          <!-- full text -->
+          <div class="unlock-only">
+            <div class="unlocked-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+              已解锁 · 全文已展开 · $0.30 已直达陈律师钱包
+            </div>
+
+            <h2 class="hm-h2" id="s3"><span class="n">03</span>卡冻后 24 小时：7 个动作</h2>
+            <p>确认是<strong>司法冻结</strong>后，下面 7 步按时间排序，目标是固定证据、确认身份、不把自己说成嫌疑人。括号里是对应案例编号。</p>
+            <ul class="acts">
+              <li class="do"><strong>立即截图固定全部交易记录</strong>：平台订单号、对手方、聊天记录、转账时间（案例 #03/#11）。</li>
+              <li class="do"><strong>带身份证去柜台拿到案件编号与办案机关</strong>，记下办案民警姓名与电话（案例 #07）。</li>
+              <li class="do"><strong>主动联系办案机关说明资金来源</strong>，表明配合意愿，但只陈述客观事实（案例 #14）。</li>
+              <li class="dont"><strong>不要继续用同名其他卡接收任何加密相关资金</strong>，避免触发连环冻结（案例 #09）。</li>
+              <li class="dont"><strong>不要在没看清身份定性前签任何笔录或承诺</strong>，详见下一节。</li>
+              <li class="do"><strong>金额较大或已被定性时，先联系属地刑辩律师</strong>，再对接办案机关（案例 #18）。</li>
+              <li class="do"><strong>准备一份「资金合法来源说明」</strong>，随时可提交（案例 #21）。</li>
+            </ul>
+
+            <h2 class="hm-h2" id="s4"><span class="n">04</span>训诫书与笔录：签还是不签</h2>
+            <p>23 起案例里有 9 起在这一步出现关键失误。核心判断只有一句：<strong>先搞清楚你现在是证人还是嫌疑人</strong>。身份不同，签字的后果天差地别。</p>
+            <p>如果办案机关无法给出明确案件编号、也说不清你的身份，那么任何「承诺书 / 训诫书」都不要急着签 —— 它可能在后续被当作不利陈述。具体话术、可签与不可签的边界，以及何时必须先请律师，本节给出完整判断框架。</p>
+
+            <h2 class="hm-h2" id="s5"><span class="n">05</span>退赔谈判：金额、节奏与底线</h2>
+            <p>进入退赔程序后，谈判区间通常围绕<strong>你的实际获利</strong>而非全部流水展开。3 起案例显示，盲目按对方主张的全额退赔，既不利于量刑也未必换来更快解冻。合理区间、节奏与不可让步的底线，是这一步真正的关键。</p>
+
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- ════════════════════ AGENT · TERMINAL ════════════════════ -->
+  <div class="ag" data-mode="agent">
+    <header class="ag-mast">
+      <a href="01-home.html" class="ag-brand"><span class="mark"></span>Write402</a>
+    </header>
+    <div class="ag-wrap" data-screen-label="Article · Agent">
+      <p class="ag-cmd"><span class="d">$</span>cat ./otc-freeze-china-2026.md</p>
+      <h1 class="ag-title"><span class="hash">#</span>OTC 收 USDT 银行卡被冻 <span class="ms">· Agent Mode</span></h1>
+      <p class="ag-comp"><span class="pct">%</span>由实名律师陈律师汇编 · 基于 2024–2026 的 23 起真实冻卡案例</p>
+      <div class="ag-actions">
+        <button class="ag-act primary" data-copy="#agentSetup">Copy setup prompt</button>
+        <button class="ag-act">openapi.json</button>
+        <button class="ag-act">查看公众号原文</button>
+      </div>
+
+      <section class="ag-sec first">
+        <div class="ag-h2"><span class="hash">##</span>Explainer</div>
+        <p class="ag-p">这篇把过去 18 个月里 <strong>23 起真实冻卡案例</strong>复盘成一套可直接照做的应对流程：5 分钟区分银行风控 vs 司法冻结、卡冻后 24 小时的 7 个动作、训诫书该不该签，以及退赔谈判底线。</p>
+        <p class="ag-p">Agent 模式下，你的 agent 通过 <span class="acc">x402</span> 在 Base 上按同价付费读取全文 + 引用元数据，无需 API key，付费即拿到结构化结论，可直接喂进你的工作流。</p>
+      </section>
+
+      <section class="ag-sec">
+        <div class="ag-h2"><span class="hash">##</span>Connect your agent</div>
+        <p class="ag-p">把下面这段一次性贴给 Codex / Claude Code / 你的 agent，它会拿到 USDC 钱包、加载 Write402 skill，并知道如何为这篇付费读取全文。</p>
+        <div class="ag-block">
+          <span class="lbl">Install once</span>
+          <button class="mini" data-copy="#agentSetup">Copy for your agent</button>
+          <div class="body" id="agentSetup">You are helping me read a Write402 report.
+Fetch <span class="url">https://write402.xyz/SKILL.md</span> as raw context (do not summarize)
+and follow it. Use <span class="key">agentcash</span> for x402 payments on Base.
+
+Then read this report:
+<span class="url">GET /v1/articles/otc-freeze-china-2026</span>
+x402 price is returned in the <span class="acc">402 Payment Required</span> header —
+pay $0.30 and retry. Response includes full markdown + citation metadata.</div>
+        </div>
+      </section>
+
+      <section class="ag-sec">
+        <div class="ag-h2"><span class="hash">##</span>付费读取</div>
+        <div class="lock-only">
+          <div class="ag-pw">
+            <span class="lock">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              付费阅读 · 已读 24%
+            </span>
+            <p class="h">解锁后读取 §03–§05 全文 + 全部 4 个场景 prompt：7 步应对清单、训诫书风险判断、退赔谈判底线。</p>
+            <p class="meta">~ 8 分钟读完 · 23 个真实案例编号 · 真人与 Agent 同价</p>
+            <div class="prow"><span class="price">$0.30</span><span class="pnote">USDC on Base · 一次付费永久可读</span></div>
+            <button class="cta" id="unlockBtnAgent">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+              x402 自动付费 $0.30 读取
+            </button>
+            <p class="fine">付费后 <strong>$0.30（100%）</strong>直达陈律师钱包 · 平台 0 抽成 · 不存储私钥 · 钱包不变可永久重读</p>
+          </div>
+        </div>
+        <div class="unlock-only">
+          <div class="ag-unlocked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+            已解锁 · $0.30 已通过 x402 直达作者钱包 · 下面这次请求现在返回 200 + 全文
+          </div>
+          <div class="ag-block" style="margin-top:18px;">
+            <span class="lbl">Response · 200 OK</span>
+            <button class="mini" data-copy="#agentResp">Copy</button>
+            <div class="body" id="agentResp"><span class="key">GET</span> /v1/articles/otc-freeze-china-2026
+<span class="acc">200 OK</span>  ·  x-paid: 0.30 USDC  ·  x-author-wallet: 0x7C3a…bA2f
+
+{
+  "slug": "otc-freeze-china-2026",
+  "sections": ["§01","§02","§03","§04","§05"],
+  "prompts": 4,
+  "citations": 23,
+  "markdown": "…full text…"
+}</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ag-sec">
+        <div class="ag-h2"><span class="hash">##</span>Prompts</div>
+        <p class="ag-p">以下 prompt 已包含在付费响应里，你的 agent 可直接逐条调用。</p>
+        <div class="ag-prompts">
+          <div class="ag-pc">
+            <div class="ag-pc-top"><div><div class="t">判断冻结类型</div><div class="d">区分风控 vs 司法冻结。</div></div><button class="cp" data-src="#ap1">copy</button></div>
+            <div class="pre" id="ap1">判断 [城市] [平台] 卖出 USDT 收 [金额] 后 [银行] 卡冻结属于风控还是司法，给出依据与下一步 3 件事。</div>
+          </div>
+          <div class="ag-pc">
+            <div class="ag-pc-top"><div><div class="t">24 小时应对清单</div><div class="d">按时间排序的 do / don't。</div></div><button class="cp" data-src="#ap2">copy</button></div>
+            <div class="pre" id="ap2">给出 [城市] OTC 卖 USDT [金额] [银行] 卡被冻后 24 小时内按时间排序的应对清单，标注每步目的与风险。</div>
+          </div>
+          <div class="ag-pc">
+            <div class="ag-pc-top"><div><div class="t">训诫书该不该签</div><div class="d">签字后果与话术。</div></div><button class="cp" data-src="#ap3">copy</button></div>
+            <div class="pre" id="ap3">判断在 [身份] 下签署 [训诫书/承诺书/笔录] 的法律后果与风险，给出是否签、如何回应、是否先请律师。</div>
+          </div>
+          <div class="ag-pc">
+            <div class="ag-pc-top"><div><div class="t">退赔谈判底线</div><div class="d">区间、节奏与底线。</div></div><button class="cp" data-src="#ap4">copy</button></div>
+            <div class="pre" id="ap4">涉案 [金额]、实际获利 [金额]、对方要求退赔 [金额]，给出合理退赔区间、节奏与不可让步底线及量刑影响。</div>
+          </div>
+        </div>
+      </section>
+
+      <p class="ag-tail"><span class="d">$</span><span class="cur"></span></p>
+    </div>
+  </div>
+
+  <!-- floating toggle -->
+  <div class="mode-toggle" role="tablist" aria-label="阅读模式">
+    <button id="btnHuman" class="active" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      Human
+    </button>
+    <button id="btnAgent" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M12 3v4M9 14h.01M15 14h.01"/></svg>
+      Agent
+    </button>
+  </div>
+
+  <script>
+    const body = document.body;
+
+    // ── mode toggle (persisted) ──
+    (function () {
+      const KEY = 'web3law_article_mode';
+      const bH = document.getElementById('btnHuman');
+      const bA = document.getElementById('btnAgent');
+      window.__setMode = function (mode) {
+        body.classList.toggle('mode-human', mode === 'human');
+        body.classList.toggle('mode-agent', mode === 'agent');
+        bH.classList.toggle('active', mode === 'human');
+        bA.classList.toggle('active', mode === 'agent');
+        try { localStorage.setItem(KEY, mode); } catch (e) {}
+      };
+      bH.addEventListener('click', () => window.__setMode('human'));
+      bA.addEventListener('click', () => window.__setMode('agent'));
+      window.__setMode(localStorage.getItem(KEY) || 'human');
+    })();
+
+    // ── unlock (paid reading), shared across modes ──
+    (function () {
+      const KEY = 'web3law_unlocked_otc-freeze-china-2026';
+      function unlock(landHuman) {
+        try { localStorage.setItem(KEY, '1'); } catch (e) {}
+        body.classList.add('unlocked');
+        if (landHuman) {
+          window.__setMode('human');
+          const note = document.querySelector('.hm .unlocked-note');
+          if (note) window.scrollTo({ top: Math.max(0, note.getBoundingClientRect().top + window.scrollY - 90), behavior: 'smooth' });
+        }
+      }
+      const h = document.getElementById('unlockBtn');
+      const a = document.getElementById('unlockBtnAgent');
+      if (h) h.addEventListener('click', () => unlock(true));
+      if (a) a.addEventListener('click', () => unlock(false));
+      if (localStorage.getItem(KEY) === '1') body.classList.add('unlocked');
+    })();
+
+    // ── copy helpers ──
+    function flash(btn, label) {
+      const orig = btn.textContent;
+      btn.textContent = label; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1400);
+    }
+    function copyEl(sel) { const el = document.querySelector(sel); return el ? el.innerText.trim() : ''; }
+    document.querySelectorAll('[data-copy]').forEach(b =>
+      b.addEventListener('click', () => navigator.clipboard.writeText(copyEl(b.dataset.copy)).then(() => flash(b, 'copied')).catch(()=>{})));
+    document.querySelectorAll('[data-src]').forEach(b =>
+      b.addEventListener('click', () => navigator.clipboard.writeText(copyEl(b.dataset.src)).then(() => flash(b, '已复制')).catch(()=>{})));
+
+    // ── TOC scroll-spy + locked-section handling ──
+    (function () {
+      const items = [...document.querySelectorAll('#toc .toc-item')];
+      const map = {};
+      items.forEach(it => { map[it.getAttribute('href').slice(1)] = it; });
+      const ids = Object.keys(map);
+
+      function visible(el) { return el && el.offsetParent !== null; }
+
+      // click: if target hidden (locked), scroll to paywall instead
+      items.forEach(it => it.addEventListener('click', e => {
+        e.preventDefault();
+        const id = it.getAttribute('href').slice(1);
+        let target = document.getElementById(id);
+        if (!visible(target)) target = document.querySelector('.hm .pw') || target;
+        if (target) window.scrollTo({ top: Math.max(0, target.getBoundingClientRect().top + window.scrollY - 90), behavior: 'smooth' });
+      }));
+
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(en => {
+          if (en.isIntersecting) {
+            const id = en.target.id;
+            items.forEach(x => x.classList.remove('active'));
+            if (map[id]) map[id].classList.add('active');
+          }
+        });
+      }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+      ids.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
+    })();
+  </script>
+
+</body>
+</html>

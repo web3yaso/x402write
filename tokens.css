@@ -1,0 +1,283 @@
+/* ============================================================
+   web3law.tech — Design Tokens
+   提取自现有网站截图 · 移动端优先 · 浅色背景
+   ============================================================ */
+
+:root {
+
+  /* ----------------------------------------------------------
+     Brand Colors · 品牌色
+     ---------------------------------------------------------- */
+  --color-crimson:        #8B1F30;  /* 主品牌色 · CTA / 图标 / 强调 */
+  --color-crimson-hover:  #A83245;  /* 悬停态 */
+  --color-crimson-tint:   #F5E6E8;  /* 图标底色 / Tag 背景 */
+  --color-charcoal:       #2F2C28;  /* 导航栏 / 步骤编号 */
+  --color-charcoal-light: #3F3B36;  /* 悬停态 */
+
+  /* ----------------------------------------------------------
+     Backgrounds · 背景层级（浅色，从深到浅）
+     ---------------------------------------------------------- */
+  --bg-sand:        #EAD8CC;  /* 暖米色 · 专题/Hero 替代背景 */
+  --bg-cream:       #F5EEE8;  /* 浅暖色 · 交替 Section 背景 */
+  --bg-warm-white:  #FAF8F5;  /* 近白 · 内容区域背景 */
+  --bg-white:       #FFFFFF;  /* 纯白 · 卡片背景 */
+
+  /* ----------------------------------------------------------
+     Text Scale · 文字色阶
+     ---------------------------------------------------------- */
+  --text-primary:   #2A2520;  /* 主标题 / 强调正文 */
+  --text-secondary: #5A4F48;  /* 正文 / 描述 */
+  --text-tertiary:  #8A7F78;  /* 辅助说明 / Caption */
+  --text-disabled:  #B5ABA4;  /* 禁用 / 占位 */
+
+  /* ----------------------------------------------------------
+     Border · 边框
+     ---------------------------------------------------------- */
+  --border-default: #E0D5CE;  /* 默认边框 */
+  --border-light:   #EDE5DF;  /* 浅色边框 */
+  --border-crimson: #8B1F30;  /* 品牌色边框（强调按钮等） */
+
+  /* ----------------------------------------------------------
+     Compliance Category Colors · 合规分类色
+     每类别：背景色 / 边框/文字色 / 深文字色
+     ---------------------------------------------------------- */
+
+  /* Enforcement · 执法 */
+  --cat-enforcement-bg:     #FEF2F2;
+  --cat-enforcement-border: #DC2626;
+  --cat-enforcement-text:   #991B1B;
+
+  /* Policy · 政策 */
+  --cat-policy-bg:          #EFF6FF;
+  --cat-policy-border:      #2563EB;
+  --cat-policy-text:        #1E3A8A;
+
+  /* Licensing · 牌照 */
+  --cat-licensing-bg:       #FFFBEB;
+  --cat-licensing-border:   #D97706;
+  --cat-licensing-text:     #78350F;
+
+  /* Sanctions · 制裁 */
+  --cat-sanctions-bg:       #FFF7ED;
+  --cat-sanctions-border:   #EA580C;
+  --cat-sanctions-text:     #7C2D12;
+
+  /* ----------------------------------------------------------
+     Status Colors · 从业者速查状态色
+     ---------------------------------------------------------- */
+  --status-clear-text:   #15803D;  /* ✓ 合规/允许 */
+  --status-clear-bg:     #F0FDF4;
+  --status-caution-text: #B45309;  /* ! 待确认/注意 */
+  --status-caution-bg:   #FFFBEB;
+  --status-blocked-text: #DC2626;  /* ✕ 禁止/不允许 */
+  --status-blocked-bg:   #FEF2F2;
+
+  /* ----------------------------------------------------------
+     Typography · 字体
+     ---------------------------------------------------------- */
+  --font-sans:    'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-serif:   'Noto Serif SC', 'SimSun', Georgia, serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Type Scale */
+  --text-xs:   11px;  /* Caption · Badge */
+  --text-sm:   12px;  /* 辅助说明 */
+  --text-base: 14px;  /* 正文 */
+  --text-md:   16px;  /* 大号正文 */
+  --text-lg:   18px;  /* 小标题 H3 */
+  --text-xl:   20px;  /* 卡片标题 H2 */
+  --text-2xl:  28px;  /* 节标题 H1 */
+  --text-3xl:  36px;  /* Hero 副标 */
+  --text-4xl:  48px;  /* Hero 主标 */
+
+  /* Line Heights */
+  --leading-tight:  1.25;
+  --leading-snug:   1.4;
+  --leading-normal: 1.6;
+  --leading-loose:  1.8;
+
+  /* Font Weights */
+  --font-regular: 400;
+  --font-medium:  500;
+  --font-semibold: 600;
+  --font-bold:    700;
+
+  /* ----------------------------------------------------------
+     Spacing Scale · 间距系统
+     ---------------------------------------------------------- */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;   /* 移动端节间距 */
+  --space-20:  80px;   /* 桌面端节间距 */
+
+  /* ----------------------------------------------------------
+     Border Radius · 圆角
+     ---------------------------------------------------------- */
+  --radius-sm:   4px;   /* Badge / Tag */
+  --radius-md:   8px;   /* 按钮 / 输入框 / 小组件 */
+  --radius-lg:   12px;  /* 卡片 */
+  --radius-xl:   16px;  /* 大卡片 / Modal */
+  --radius-full: 9999px; /* Pill */
+
+  /* ----------------------------------------------------------
+     Breakpoints · 响应式断点（CSS 中用 @media）
+     ---------------------------------------------------------- */
+  /* Mobile:  < 768px  → 1 column, bottom nav */
+  /* Tablet:  768–1023px → 2 columns */
+  /* Desktop: ≥ 1024px → 3–4 columns, top nav */
+
+  /* ----------------------------------------------------------
+     Touch Targets · 触控规范
+     ---------------------------------------------------------- */
+  --touch-min: 44px;   /* 最小可点击高度/宽度 */
+  --btn-height-mobile: 48px;
+  --btn-height-desktop: 40px;
+
+  /* ----------------------------------------------------------
+     Z-index Stack · 层叠顺序
+     ---------------------------------------------------------- */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-sticky:  100;   /* 导航栏 */
+  --z-modal:   200;
+  --z-toast:   300;
+}
+
+
+/* ============================================================
+   Utility Classes · 常用工具类
+   ============================================================ */
+
+/* Compliance category border-left accent (Feed 行左侧色条) */
+.cat-enforcement { border-left: 3px solid var(--cat-enforcement-border); }
+.cat-policy      { border-left: 3px solid var(--cat-policy-border); }
+.cat-licensing   { border-left: 3px solid var(--cat-licensing-border); }
+.cat-sanctions   { border-left: 3px solid var(--cat-sanctions-border); }
+
+/* Quick Check status icons */
+.status-clear   { color: var(--status-clear-text);   font-weight: 700; }
+.status-caution { color: var(--status-caution-text); font-weight: 700; }
+.status-blocked { color: var(--status-blocked-text); font-weight: 700; }
+
+/* Crimson CTA button */
+.btn-primary {
+  background:    var(--color-crimson);
+  color:         #fff;
+  border:        none;
+  padding:       0 20px;
+  height:        var(--btn-height-desktop);
+  min-height:    var(--touch-min);
+  border-radius: var(--radius-md);
+  font-size:     var(--text-base);
+  font-weight:   var(--font-semibold);
+  cursor:        pointer;
+  transition:    background 0.15s;
+}
+.btn-primary:hover { background: var(--color-crimson-hover); }
+
+/* Ghost button */
+.btn-outline {
+  background:    transparent;
+  color:         var(--color-crimson);
+  border:        1.5px solid var(--color-crimson);
+  padding:       0 20px;
+  height:        var(--btn-height-desktop);
+  min-height:    var(--touch-min);
+  border-radius: var(--radius-md);
+  font-size:     var(--text-base);
+  font-weight:   var(--font-medium);
+  cursor:        pointer;
+}
+
+/* Badge / Tag */
+.badge {
+  display:       inline-block;
+  padding:       3px 10px;
+  border-radius: var(--radius-full);
+  font-size:     var(--text-xs);
+  font-weight:   var(--font-medium);
+}
+.badge-brand    { background: var(--color-crimson-tint); color: var(--color-crimson); }
+.badge-sand     { background: var(--bg-sand); color: #5A3D2B; }
+.badge-coming   { background: var(--border-light); color: var(--text-tertiary); }
+
+/* Icon container */
+.icon-box {
+  width:         40px;
+  height:        40px;
+  border-radius: var(--radius-md);
+  background:    var(--color-crimson-tint);
+  color:         var(--color-crimson);
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  flex-shrink:   0;
+}
+
+/* Step number badge */
+.step-num {
+  width:         28px;
+  height:        28px;
+  border-radius: 50%;
+  background:    var(--color-charcoal);
+  color:         #fff;
+  font-size:     var(--text-sm);
+  font-weight:   var(--font-bold);
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  flex-shrink:   0;
+}
+
+/* Feed row */
+.feed-row {
+  padding:       12px 14px;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border-top:    0.5px solid var(--border-light);
+  border-right:  0.5px solid var(--border-light);
+  border-bottom: 0.5px solid var(--border-light);
+  background:    var(--bg-white);
+}
+
+/* Section alternating backgrounds */
+.section-cream { background: var(--bg-cream); }
+.section-sand  { background: var(--bg-sand); }
+.section-white { background: var(--bg-white); }
+
+/* Mobile bottom nav (applies at < 768px) */
+@media (max-width: 767px) {
+  .bottom-nav {
+    position:        fixed;
+    bottom:          0;
+    left:            0;
+    right:           0;
+    height:          56px;
+    background:      var(--color-charcoal);
+    display:         flex;
+    align-items:     center;
+    justify-content: space-around;
+    z-index:         var(--z-sticky);
+    /* Safe area for iPhone home bar */
+    padding-bottom:  env(safe-area-inset-bottom);
+  }
+
+  .bottom-nav-item {
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    gap:             2px;
+    color:           rgba(255,255,255,0.5);
+    font-size:       10px;
+    min-width:       var(--touch-min);
+    min-height:      var(--touch-min);
+    justify-content: center;
+    text-decoration: none;
+  }
+  .bottom-nav-item.active { color: var(--bg-sand); }
+}
