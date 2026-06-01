@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getReportMeta, getReportBody, listReportSlugs } from "./reports";
+import { getReportMeta, getReportBody, listReportSlugs, listPublishedReports, getPublishedReport } from "./reports";
 
 describe("reports loader", () => {
   it("reads frontmatter meta for the seed", () => {
@@ -22,5 +22,16 @@ describe("reports loader", () => {
 
   it("lists the seed slug", () => {
     expect(listReportSlugs()).toContain("onchain-partnership-rwa");
+  });
+});
+
+describe("published reports join", () => {
+  it("lists the published seed report with a formatted price", () => {
+    const seed = listPublishedReports().find((r) => r.meta.slug === "onchain-partnership-rwa");
+    expect(seed).toBeTruthy();
+    expect(seed!.priceUsd).toBe("$0.30");
+  });
+  it("returns null for an unpublished slug", () => {
+    expect(getPublishedReport("does-not-exist")).toBeNull();
   });
 });

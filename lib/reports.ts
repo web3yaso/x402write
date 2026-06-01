@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import matter from "gray-matter";
 import { decryptContent } from "./content-crypto";
+import { readIndex, type AttestationRecord } from "./attestation-index";
 
 const REPORTS_DIR = resolve(process.cwd(), "content/reports");
 const SLUG_RE = /^[a-z0-9-]{1,80}$/;
@@ -44,4 +45,30 @@ export function getReportBody(slug: string): string {
   const file = resolve(REPORTS_DIR, `${slug}.enc`);
   if (!existsSync(file)) throw new Error(`encrypted body not found: ${slug}`);
   return decryptContent(readFileSync(file, "utf8"), key);
+}
+
+export type PublishedReport = {
+  meta: ReportMeta;
+  record: AttestationRecord;
+  priceUsd: string; // formatted "$0.30"
+};
+
+function formatUsdc(priceUSDC: string): string {
+  return "$" + (Number(BigInt(priceUSDC)) / 1e6).toFixed(2);
+}
+
+/** Reports that have an on-chain attestation recorded in the index. */
+export function listPublishedReports(): PublishedReport[] {
+  return readIndex()
+    .filter((r) => { try { getReportMeta(r.slug); return true; } catch { return false; } })
+    .map((r) => ({ meta: getReportMeta(r.slug), record: r, priceUsd: formatUsdc(r.priceUSDC) }));
+}
+
+/** A single published report, or null if the slug is not published (not in the index). */
+export function getPublishedReport(slug: string): PublishedReport | null {
+  const rec = readIndex().find((r) => r.slug === slug);
+  if (!rec) return null;
+  let meta: ReportMeta;
+  try { meta = getReportMeta(slug); } catch { return null; }
+  return { meta, record: rec, priceUsd: formatUsdc(rec.priceUSDC) };
 }
