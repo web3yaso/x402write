@@ -75,7 +75,7 @@
 | 结算币种        | USDC on Base Sepolia                                                    |                                    |
 | 真人钱包        | wagmi v2 + viem + **RainbowKit**                                        | connect + 签名 + 付费一站式               |
 | Agent 钱包    | **AgentCash MCP**（用户已装）                                                 | demo 时直接在 Claude Code 里调用          |
-| 内容存储        | MDX 文件 `content/reports/*.md`（仓库内）                                      | 黑客松不引入 DB                          |
+| 内容存储        | frontmatter 明文 `.mdx` + **付费 body 加密** `.enc`（仓库内，AES-256-GCM）        | 黑客松不引入 DB；仓库 PUBLIC，付费正文须加密入库（见 §8.7） |
 | 元数据来源       | EAS GraphQL + 本地 JSON 索引                                                | 双源对账                               |
 | 部署          | Vercel                                                                  | 单 project                          |
 
@@ -291,17 +291,22 @@ components/
 
 lib/
 ├── eas.ts                            EAS schema + sdk wrapper
-├── reports.ts                        MDX loader + frontmatter parsing
-├── companions.ts                     companion loader：读 content/companions/<slug>.md，按 0/A/B/C 区拆公开 scaffold vs 付费〔A〕区（Story 6）
+├── content-crypto.ts                 AES-256-GCM encrypt/decrypt（付费正文加密 · §8.7，server-only）
+├── reports.ts                        frontmatter loader（getReportMeta）+ getReportBody（读 .enc → 解密，server-only）
+├── companions.ts                     companion loader：明文 .md 拆 0/B/C 公开 scaffold；付费〔A〕区读 .A.enc → 解密（Story 6 / §8.7）
 ├── x402-server.ts                    @x402/next 单例 + dynamic RouteConfig builder
 ├── x402-client.ts                    fetch wrapper 带 402 auto-pay（基于 @x402/evm）
-└── wagmi-config.ts                   RainbowKit + Base Sepolia
+└── wagmi-config.ts                   wagmi v2 injected（MetaMask only）+ Base Sepolia
 
 content/reports/
-└── otc-freeze-case-001.mdx           seed 文章（约 2000 字）
+├── otc-freeze-case-001.mdx           seed 文章 frontmatter（明文元数据，无 body）
+├── otc-freeze-case-001.enc           加密 body（AES-256-GCM，§8.7）
+└── _plaintext/                       明文源（.gitignore，永不入库）
+    └── otc-freeze-case-001.md        frontmatter + 全文（约 2000 字），跑 encrypt-content.ts 出上面两个文件
 
 content/companions/
-└── otc-freeze-case-001.md            预烘 seed companion（0/A/B/C 区，Story 6）
+├── otc-freeze-case-001.md            预烘 companion 公开区（0/B/C + Explainer，明文，Story 6）
+└── otc-freeze-case-001.A.enc         加密〔A〕付费区（术语表/法条地图/误区表，§8.7）
 
 data/
 ├── attestation-index.json            [{ slug, attestationUID, txHash, author, priceUSDC, publishedAt, version, disclaimerHash }]
@@ -309,6 +314,7 @@ data/
 
 scripts/
 ├── eas-register-schema.ts            一次性：注册 schema，记录 schemaUID 到 .env
+├── encrypt-content.ts                读 _plaintext/<slug>.md → 出 <slug>.mdx（元数据）+ <slug>.enc（加密 body）+ companion .A.enc（§8.7）
 └── seed-attest.ts                    自动把 seed 文章 attest 一次（可选，给 demo 提速）
 ```
 
@@ -379,6 +385,19 @@ string disclaimer
 
 companion 文件分公开与付费两半（详见 Story 6）：〔0〕免责 + 〔B〕Agent 操作手册 + 〔C〕读者起手 prompt + Explainer 是**公开 scaffold**，渲染在 `/reports/[slug]`；〔A〕区（术语表 / 法条地图 / 误区表）是**付费内容**，只随 `/api/v1/articles/[slug]` 200 返回，**绝不**进公开区或 402 body。companion 由后台在 publish 后"生成"（黑客松为 stub + 预烘，不调 LLM）。
 
+### 8.7 付费正文加密入库（公开仓库下的付费墙完整性）
+
+**本仓库 GitHub 可见性为 PUBLIC**，付费正文若以明文 MDX 提交即可被任何人在 GitHub 上免费读取、绕过付费墙。付费墙的运行时边界（服务端只发 24% 预览 / 付费后发全文）只堵浏览器侧；**仓库 at-rest 这条泄露面用对称加密单独堵**。
+
+- **加密的**：report markdown body → `content/reports/<slug>.enc`；companion〔A〕付费区 → `content/companions/<slug>.A.enc`。方案 = AES-256-GCM（Node 内置 `crypto`），磁盘格式 base64(`iv(12B) ‖ ciphertext ‖ authTag(16B)`)。
+- **明文的（本就公开）**：report frontmatter；companion〔0〕〔B〕〔C〕+ Explainer。
+- **密钥** `CONTENT_ENC_KEY`（32B base64）**只在 env**，绝不进 repo；解密**仅 server-side**，绝不下发 client。
+- **明文源** `content/reports/_plaintext/`**`.gitignore`**，永不入库。`scripts/encrypt-content.ts` 由明文源生成 `.mdx` 元数据 + `.enc` 密文。
+- **数据流**：服务端 `getReportBody(slug)` 读 `.enc` → 解密 → SSR 只切 24%、付费 API 给 100%；`contentHash` 解密后重算对账 EAS。
+- **双层防御**：加密堵公开 repo at-rest；运行时仍由服务端决定 24% vs 100%（与 §8.3 / §8.6 一致，付费正文绝不进 402 body / 公开区）。
+
+> 设计文档：`docs/superpowers/specs/2026-05-31-x402write-build-design.md` §1.3。
+
 ---
 
 ## 9. 环境变量
@@ -402,10 +421,12 @@ EAS_SCHEMA_REGISTRY=0x4200000000000000000000000000000000000020
 EAS_SCHEMA_UID=                       # 跑完 register-schema 后填入
 EAS_GRAPHQL_URL=https://base-sepolia.easscan.org/graphql
 
-# Wallet (frontend)
-NEXT_PUBLIC_WC_PROJECT_ID=            # WalletConnect Cloud
+# Wallet (frontend) — 仅 MetaMask injected，无 WalletConnect（已去 RainbowKit/WC）
 NEXT_PUBLIC_CHAIN_ID=84532
 NEXT_PUBLIC_USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+
+# Content encryption (付费正文加密入库 · §8.7) — 32B base64，openssl rand -base64 32
+CONTENT_ENC_KEY=                      # 仅 env，绝不进 repo；服务端解密付费 body / companion〔A〕区
 
 # Demo wallets (optional, for seed scripts)
 DEMO_AUTHOR_PRIVATE_KEY=              # 仅测试网，绝不复用 mainnet 私钥
@@ -441,6 +462,10 @@ DEMO_AUTHOR_PRIVATE_KEY=              # 仅测试网，绝不复用 mainnet 私�
 [ ] companion 的〔A〕区（术语表/法条地图/误区表）不出现在公开 scaffold、不出现在 402 body（属付费内容）
 [ ] companion 文件按 slug whitelist 读取（同 `[a-z0-9-]{1,80}`）
 [ ] companion "后台生成" 为 stub + 预烘，本 milestone 不引入任何 LLM / Anthropic API 调用
+[ ] 付费正文（report body + companion〔A〕区）只以密文 .enc 入库，仓库内无任何明文付费正文
+[ ] CONTENT_ENC_KEY 仅在 env（.env.local + Vercel），未进 git index；解密仅 server-side，key 不下发 client
+[ ] content/reports/_plaintext/ 已被 .gitignore 忽略（明文源永不入库）
+[ ] 解密后的全文只在服务端使用：SSR 仅输出 24% 预览，付费 API 才输出 100%，402 body 仍不含全文
 ```
 
 ---

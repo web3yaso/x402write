@@ -24,6 +24,31 @@
 - 落地策略：先放**结构占位**——正确的 frontmatter schema（§7 字段）+ companion 0/A/B/C 四区骨架 + 明显的 `<!-- 待粘贴 -->` 标记，让 Phase 0–2 脚手架可跑；正文到位后替换。
 - Story 6 引用的 `legal-explainer-agent-mode-design.md` 仓库内不存在；companion 的 0/A/B/C 分区与付费边界以 HACKATHON.md §5 Story 6 + §8.6 为准，足以实现。
 
+### 1.3 付费正文加密入库 —— 公开仓库下的付费墙完整性（PRD 未覆盖，本决策补充）
+
+**背景**：本仓库 GitHub 可见性为 **PUBLIC**。若付费正文以明文 MDX 提交，任何人翻 GitHub 即可免费读全文，绕过付费墙。付费墙的**运行时**边界（服务端只发 24% 预览 / 付费后发全文）只堵浏览器侧；**仓库 at-rest** 这条泄露面必须单独堵。
+
+**威胁模型**：付费内容（report body + companion〔A〕区）**绝不**以明文出现在任一公开可读位置 —— 公开 repo、402 body、未付费浏览器态。
+
+**方案：对称 AEAD 加密入库（AES-256-GCM，Node 内置 `crypto`）**
+
+- **加密的**：report markdown body → `content/reports/<slug>.enc`；companion〔A〕付费区 → `content/companions/<slug>.A.enc`。磁盘格式 = base64(`iv(12B) ‖ ciphertext ‖ authTag(16B)`)。GCM 自带完整性校验。
+- **明文的（本就公开）**：report frontmatter（title/tags/author/slug/publishedAt/wordCount/summary）；companion 的〔0〕免责 +〔B〕操作手册 +〔C〕起手 prompt + Explainer。
+- **密钥**：`CONTENT_ENC_KEY` = 32 字节，base64（`openssl rand -base64 32` 生成）。**只在** `.env.local` + Vercel env，**绝不进 repo**。
+- **明文源**：`content/reports/_plaintext/<slug>.md`（含 frontmatter + body）本地保存，**`.gitignore` 忽略**，永不入库。Sophie 提供的正文放这里。
+- **数据流**：
+  - 入库工具 `scripts/encrypt-content.ts` 读 `_plaintext/<slug>.md` → 拆出 frontmatter 写 `<slug>.mdx`（仅元数据）+ 加密 body 写 `<slug>.enc`。
+  - 服务端 `lib/reports.ts`：`getReportMeta(slug)`（读 frontmatter，无需 key）；`getReportBody(slug)`（读 `.enc` → `lib/content-crypto.ts` 解密，**server-only**）。
+  - `/reports/[slug]` SSR：解密 body → 只切 24% 给浏览器。`/api/v1/articles/[slug]` 付费后：解密 body → 给 100%。
+  - `contentHash = keccak256(utf8(body))` 由服务端**解密后**重算，与 EAS attestation 对账。
+- **双层防御**：加密堵 at-rest（公开 repo）；运行时仍由服务端决定 24% vs 100%（堵浏览器侧）。两层独立。
+
+**对 HACKATHON.md 的偏离（需同步修订）**：
+- §4 内容存储「MDX 文件（明文）」→ frontmatter 明文 `.mdx` + 加密 body `.enc`；明文源 `_plaintext/` gitignore。
+- §6 文件清单新增：`lib/content-crypto.ts`、`scripts/encrypt-content.ts`、`content/reports/<slug>.enc`、`content/companions/<slug>.A.enc`、`content/reports/_plaintext/`（gitignored）。
+- §9 环境变量新增 `CONTENT_ENC_KEY`。
+- §10 安全清单新增：付费正文只以密文入库；`CONTENT_ENC_KEY` 仅 env；`_plaintext/` 已 gitignore；解密仅 server-side，key 不下发 client。
+
 ---
 
 ## 2. 凭证现状 → 真跑 vs stub 边界
@@ -34,7 +59,8 @@
 | Coinbase CDP key（`CDP_API_KEY_ID/SECRET`） | ✅ 有 | x402 facilitator 用 CDP（`x402.org/facilitator` 兜底） |
 | EAS schema UID | ❌ 未注册 | 写 `scripts/eas-register-schema.ts`，**由 Sophie 跑一次**，结果写入 `.env.local` 的 `EAS_SCHEMA_UID` |
 | WalletConnect projectId | — | **不再需要**（1.1 决策） |
-| seed 正文 + companion 正文 | ⏳ Sophie 提供 | 先占位，后替换 |
+| seed 正文 + companion 正文 | ⏳ Sophie 提供 | 明文放 `content/reports/_plaintext/`（gitignore）；跑 `encrypt-content.ts` 出 `.enc` 入库（§1.3）。先占位，后替换 |
+| `CONTENT_ENC_KEY` | ❌ 未生成 | `openssl rand -base64 32`，写入 `.env.local` + Vercel env（§1.3） |
 
 ---
 
