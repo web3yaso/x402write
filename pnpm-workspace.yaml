@@ -1,6 +1,8 @@
 allowBuilds:
   bufferutil: true
+  esbuild: set this to true or false
   keccak: true
+  secp256k1: set this to true or false
   sharp: true
   utf-8-validate: true
 onlyBuiltDependencies:
