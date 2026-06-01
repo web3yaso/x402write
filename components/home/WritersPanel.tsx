@@ -10,7 +10,7 @@ export function WritersPanel() {
   const importGo = () => router.push("/publish?source=" + encodeURIComponent(src));
 
   return (
-    <section className="panel" id="panel-writers">
+    <section className="panel active" id="panel-writers">
       <h1 className="display">{"你的文章已经很有价值\n现在Agent也可以付费阅读"}</h1>
       <p className="sub">{"导入你的公众号文章,可先预览再建账户。\n我们还会为每篇自动配上场景 prompt,帮读者把文章用到自己的处境上 —— \n真人与 Agent 同价付费阅读,款项直达你的钱包。"}</p>
 

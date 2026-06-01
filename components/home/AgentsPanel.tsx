@@ -18,7 +18,7 @@ export function AgentsPanel() {
   const [provider, setProvider] = useState("AgentCash");
 
   return (
-    <section className="panel" id="panel-agents">
+    <section className="panel active" id="panel-agents">
       <div className="coming-wrap"><span className="coming-banner"><span className="pulse"></span>Agent 接入将于下一阶段开放 · 以下为功能预览</span></div>
       <h1 className="display">The best Chinese regulation analysis is behind paywalls. <em>Now let your agent read it.</em></h1>
 
