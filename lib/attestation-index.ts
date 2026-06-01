@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, renameSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { isAddress } from "viem";
 
@@ -38,8 +38,21 @@ export function readIndex(): AttestationRecord[] {
   return JSON.parse(readFileSync(INDEX_PATH, "utf8"));
 }
 
+export function hasSlug(slug: string): boolean {
+  return readIndex().some((r) => r.slug === slug);
+}
+
+/**
+ * First-write-wins: a slug can only be claimed once. This prevents an attacker
+ * from re-attesting an existing slug as themselves and REPLACING the record
+ * (authorship/payout hijack). Re-publishing requires manually clearing the entry.
+ * Writes atomically (temp file + rename) to avoid torn writes under concurrency.
+ */
 export function appendIndex(rec: AttestationRecord): void {
-  const all = readIndex().filter((r) => r.slug !== rec.slug); // replace same-slug
+  const all = readIndex();
+  if (all.some((r) => r.slug === rec.slug)) throw new Error("slug already published");
   all.push(rec);
-  writeFileSync(INDEX_PATH, JSON.stringify(all, null, 2) + "\n");
+  const tmp = `${INDEX_PATH}.tmp`;
+  writeFileSync(tmp, JSON.stringify(all, null, 2) + "\n");
+  renameSync(tmp, INDEX_PATH);
 }
