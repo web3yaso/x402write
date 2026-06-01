@@ -96,7 +96,7 @@
 
 **入口（首页）**：For Writers tab 的 Import 输入框。作者粘贴原文 URL（公众号 / Mirror / Substack）→ 点 "Import" → 跳转到 `/publish?source=<url>`。
 
-**MVP 简化**：URL 不真正抓取（公众号反爬战不在黑客松打）。**任何 URL 输入都映射到预置的 seed 文章** `content/reports/otc-freeze-case-001.mdx`。UI 上显示用户输入的 source 字段让 demo 看起来真实；scrape 实现留到 post-MVP。
+**MVP 简化**：URL 不真正抓取（公众号反爬战不在黑客松打）。**任何 URL 输入都映射到预置的 seed 文章** `content/reports/onchain-partnership-rwa.mdx`。UI 上显示用户输入的 source 字段让 demo 看起来真实；scrape 实现留到 post-MVP。
 
 **`/publish` 页面流程**：
 
@@ -197,7 +197,7 @@
      };
    });
   ```
-2. Agent 侧演示：在 Claude Code 里说 `用 agentcash 工具调 https://<domain>/api/v1/articles/otc-freeze-case-001`，AgentCash MCP 接收 402 → 自动签 USDC → 重试 → 拿到 200 + 内容
+2. Agent 侧演示：在 Claude Code 里说 `用 agentcash 工具调 https://<domain>/api/v1/articles/onchain-partnership-rwa`，AgentCash MCP 接收 402 → 自动签 USDC → 重试 → 拿到 200 + 内容
 
 **安全约束**：
 
@@ -240,7 +240,7 @@
 **"后台生成"（黑客松 = 假生成 UX + 预烘存档）**：
 
 - 生产路线：`/publish` 完成 attestation 后，后台读 markdown body，按设计文档 `GENERATE.md` 的质量约束生成 companion（B/C 区固定骨架原样保留，只填 0/A 区），作者审核法条准确性后入库。
-- **黑客松简化**：沿用 URL scrape 的 stub 模式——`/publish` 后调 `POST /api/internal/companions`，UX 上显示"生成中 → 完成"，但 seed slug 直接返回预先写好并提交进仓库的 `content/companions/otc-freeze-case-001.md`，**本 milestone 不调任何 LLM / Anthropic API**（与 CLAUDE.md 现有 no-LLM 约束一致）。
+- **黑客松简化**：沿用 URL scrape 的 stub 模式——`/publish` 后调 `POST /api/internal/companions`，UX 上显示"生成中 → 完成"，但 seed slug 直接返回预先写好并提交进仓库的 `content/companions/onchain-partnership-rwa.md`，**本 milestone 不调任何 LLM / Anthropic API**（与 CLAUDE.md 现有 no-LLM 约束一致）。
 
 **渲染（公开区，`/reports/[slug]`）**：
 
@@ -299,14 +299,14 @@ lib/
 └── wagmi-config.ts                   wagmi v2 injected（MetaMask only）+ Base Sepolia
 
 content/reports/
-├── otc-freeze-case-001.mdx           seed 文章 frontmatter（明文元数据，无 body）
-├── otc-freeze-case-001.enc           加密 body（AES-256-GCM，§8.7）
+├── onchain-partnership-rwa.mdx           seed 文章 frontmatter（明文元数据，无 body）
+├── onchain-partnership-rwa.enc           加密 body（AES-256-GCM，§8.7）
 └── _plaintext/                       明文源（.gitignore，永不入库）
-    └── otc-freeze-case-001.md        frontmatter + 全文（约 2000 字），跑 encrypt-content.ts 出上面两个文件
+    └── onchain-partnership-rwa.md        frontmatter + 全文（约 6500 字符），跑 encrypt-content.ts 出上面两个文件
 
 content/companions/
-├── otc-freeze-case-001.md            预烘 companion 公开区（0/B/C + Explainer，明文，Story 6）
-└── otc-freeze-case-001.A.enc         加密〔A〕付费区（术语表/法条地图/误区表，§8.7）
+├── onchain-partnership-rwa.md            预烘 companion 公开区（0/B/C + Explainer，明文，Story 6）
+└── onchain-partnership-rwa.A.enc         加密〔A〕付费区（术语表/法条地图/误区表，§8.7）
 
 data/
 ├── attestation-index.json            [{ slug, attestationUID, txHash, author, priceUSDC, publishedAt, version, disclaimerHash }]
@@ -482,7 +482,7 @@ DEMO_AUTHOR_PRIVATE_KEY=              # 仅测试网，绝不复用 mainnet 私�
 | 2 · EAS 集成                        | 2-3h       | `pnpm tsx scripts/eas-register-schema.ts` 注册 schema 成功，`/publish` 能签名 + 出 tx + EAS Explorer 可查    |
 | 3 · MDX 内容层                       | 1-2h       | `/reports` 列表渲染 seed 文章 + EAS 徽章；`/reports/[slug]` 预览正常                                           |
 | 4 · x402 paywall + agent endpoint | 3-4h       | 真人钱包 Unlock 全流程通；curl + AgentCash MCP 都能 402→pay→200                                              |
-| 4.5 · companion / Agent Mode 配套包  | 1-1.5h     | 预烘 `content/companions/otc-freeze-case-001.md`；`/reports/[slug]` 出现 Agent Mode 配套区（Explainer + 四句起手 prompt + agent setup），copy 按钮全 work；付费响应带 companion〔A〕区；`POST /api/internal/companions` stub 通 |
+| 4.5 · companion / Agent Mode 配套包  | 1-1.5h     | 预烘 `content/companions/onchain-partnership-rwa.md`；`/reports/[slug]` 出现 Agent Mode 配套区（Explainer + 四句起手 prompt + agent setup），copy 按钮全 work；付费响应带 companion〔A〕区；`POST /api/internal/companions` stub 通 |
 | 5 · Leaderboard 接真实数据             | 0.5-1h     | 首页 For Writers tab 的 `TopEarningAuthors` 从 mock 切到 `payment-log.json` 聚合；一次成功付费刷新榜单即可看到 EARNED 增长 |
 | 6 · 演示稿 + README                  | 1h         | 3 分钟录屏脚本 + .env.local.example + DEPLOY.md                                                         |
 | **合计**                            | **11-17h** |                                                                                                   |
@@ -500,9 +500,9 @@ DEMO_AUTHOR_PRIVATE_KEY=              # 仅测试网，绝不复用 mainnet 私�
 
 **01:15–01:30 · Story 2**：跳转到 `/reports`，刚 attest 的文章出现在列表，徽章 "on-chain ✓"。
 
-**01:30–02:10 · Story 3 + Story 6**：打开 `/reports/otc-freeze-case-001`，先指一下文章旁的 **Agent Mode 配套区**——Explainer + 四句读者起手 prompt（点一下 copy 演示可用）+ agent setup prompt。再换 **reader 钱包**，点 Unlock → x402 流程 → USDC 转出 → 全文出现（全文里同时带回结构化的术语表 / 法条地图 / 误区表）。
+**01:30–02:10 · Story 3 + Story 6**：打开 `/reports/onchain-partnership-rwa`，先指一下文章旁的 **Agent Mode 配套区**——Explainer + 四句读者起手 prompt（点一下 copy 演示可用）+ agent setup prompt。再换 **reader 钱包**，点 Unlock → x402 流程 → USDC 转出 → 全文出现（全文里同时带回结构化的术语表 / 法条地图 / 误区表）。
 
-**02:10–02:40 · Story 4**：开终端，跑 Claude Code，输入 `用 agentcash 工具调用 https://x402write.vercel.app/api/v1/articles/otc-freeze-case-001`（这段正是上一步公开区里 **copy 的 agent setup prompt**——companion 把人与 agent 两条路径串起来）。AgentCash MCP 自动完成 402→pay→200，返回全文 + companion〔A〕区 JSON。
+**02:10–02:40 · Story 4**：开终端，跑 Claude Code，输入 `用 agentcash 工具调用 https://x402write.vercel.app/api/v1/articles/onchain-partnership-rwa`（这段正是上一步公开区里 **copy 的 agent setup prompt**——companion 把人与 agent 两条路径串起来）。AgentCash MCP 自动完成 402→pay→200，返回全文 + companion〔A〕区 JSON。
 
 **02:40–03:00 · Story 5**：回首页 → 切 For Writers tab → 滚到 Top Earning Authors 榜 → demo author 那行 EARNED 数字比开场多了 (price × 2)。可顺手点旁边 BaseScan 链接抽查任意一笔 settlement tx 收尾。
 

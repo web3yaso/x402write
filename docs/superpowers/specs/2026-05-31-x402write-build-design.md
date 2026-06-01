@@ -20,7 +20,7 @@
 - §9 环境变量 `NEXT_PUBLIC_WC_PROJECT_ID` → **删除**。
 
 ### 1.2 内容来源
-- seed 文章 `content/reports/otc-freeze-case-001.mdx` 与 companion `content/companions/otc-freeze-case-001.md` 的**正文由 Sophie 提供**。
+- seed 文章 `content/reports/onchain-partnership-rwa.mdx` 与 companion `content/companions/onchain-partnership-rwa.md` 的**正文由 Sophie 提供**。
 - 落地策略：先放**结构占位**——正确的 frontmatter schema（§7 字段）+ companion 0/A/B/C 四区骨架 + 明显的 `<!-- 待粘贴 -->` 标记，让 Phase 0–2 脚手架可跑；正文到位后替换。
 - Story 6 引用的 `legal-explainer-agent-mode-design.md` 仓库内不存在；companion 的 0/A/B/C 分区与付费边界以 HACKATHON.md §5 Story 6 + §8.6 为准，足以实现。
 
