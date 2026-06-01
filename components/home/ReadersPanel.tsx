@@ -15,9 +15,7 @@ const ARTICLES = [
 ];
 
 const CHIPS = [
-  ["币圈合规观察", "公众号"], ["SG MAS Watcher", "Substack"], ["Lex Web3", "Mirror"],
-  ["ChainLaw HK", "公众号"], ["Paige Zhao", "Mirror"], ["OTC 法律日记", "公众号"],
-  ["CN Crypto Court", "Substack"], ["Web3 合规小组", "飞书"],
+  ["Alex Fan", "LXDAO"],
 ];
 
 export function ReadersPanel() {
