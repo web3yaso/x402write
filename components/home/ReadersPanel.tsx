@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const ARTICLES = [
-  { cat: "Enforcement · 大陆", price: "$0.30", q: "OTC 卖 USDT 后银行卡被冻,24 小时内该做什么?", how: "5 分钟区分风控/司法冻结 · 7 步应对清单 · 训诫书该不该签 · 4 个可复制 prompt", author: "陈律师 · 公众号" },
-  { cat: "Compliance · 大陆", price: "$0.20", q: "境内做 OTC 商家,会不会被认定帮信罪?", how: "最低合规门槛 · 帮信 vs 掩隐的认定边界 · 留痕清单 · 3 个可复制 prompt", author: "OTC 法律日记 · 公众号" },
-  { cat: "License · 香港", price: "$0.25", q: "香港 VATP 牌照:条件、时间表和资本要求?", how: "申请门槛拆解 · 时间线与成本 · 常见驳回理由 · 2 个可复制 prompt", author: "Lex Web3 · Mirror" },
-  { cat: "Tax · 跨境", price: "$0.15", q: "跨境收 USDT 当劳务报酬,境内个税怎么报?", how: "申报口径 · 折算与凭证 · 真实补税案例 · 2 个可复制 prompt", author: "币圈合规观察 · 公众号" },
-  { cat: "Sanctions · 链上", price: "$0.10", q: "钱包被加进 OFAC SDN 名单后,链上还能转出吗?", how: "SDN 链上后果 · 合规出口 · 误伤申诉路径 · 2 个可复制 prompt", author: "Web3 合规小组 · 飞书" },
-  { cat: "Case · 大陆", price: "$0.20", q: "NFT 在大陆被定性为虚拟商品的近期判例?", how: "判例时间线 · 定性逻辑 · 对发行方的启示 · 2 个可复制 prompt", author: "CN Crypto Court · Substack" },
+  {
+    cat: "Governance · 跨境",
+    price: "$0.30",
+    q: "重构链上契约:从 DAO 的治理困局到 RWA 的资产编程革命",
+    how: "链上合伙制(劳动主导资本)范式 · 数字权益单元的法律定义 · RWA 三层资产编程终局",
+    author: "Alex Fan · LXDAO · 公众号",
+    href: "/reports/onchain-partnership-rwa",
+  },
 ];
 
 const CHIPS = [
@@ -42,7 +44,7 @@ export function ReadersPanel() {
       <p className="guide-lead">每篇都由实名作者汇编自真实案例。付费后不仅能读到全文,还附场景 prompt —— 复制丢进你常用的 AI,帮你把文章用到自己的处境上,理解并解决问题。</p>
       <div className="guide-grid">
         {ARTICLES.map((a, i) => (
-          <Link className="guide-card" href="/reports" key={i}>
+          <Link className="guide-card" href={a.href} key={i}>
             <div className="g-top"><span className="g-cat">{a.cat}</span><span className="g-price">{a.price}</span></div>
             <div className="g-q">{a.q}</div>
             <div className="g-how">{a.how}</div>
