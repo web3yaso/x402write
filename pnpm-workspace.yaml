@@ -1,4 +1,7 @@
 allowBuilds:
+  bufferutil: true
+  keccak: true
   sharp: true
+  utf-8-validate: true
 onlyBuiltDependencies:
   - sharp
