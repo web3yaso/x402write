@@ -56,7 +56,12 @@
 ## 4. 风险点（实现时盯）
 
 1. **`@x402/next` v2 + Next 16 peer-dep**：装包用 `legacy-peer-deps=true`（PRD §4.1）。v2 的 `withX402` API 与网上 v1（`x402-next`）教程不同——以官方 v2 类型为准，**不照搬旧例**。安全清单要求 slug whitelist 在 RouteConfig 闭包**之前**判（无效 slug → 404，不走付费墙）。
-2. **「永久可读」黑客松简化**：每次 reload 重新付（PRD §3 Story3 已认账）。录屏时知悉此点。
+2. **「永久可读」的真实语义（修正 PRD §3 / §5 措辞矛盾）**：付费全文端点 `/api/v1/articles/[slug]` 由 `withX402` 包裹，**服务端无状态、按请求计费**，不维护「已付费名单」。因此：
+   - **落地姿势**：付费成功后客户端把全文 + `{slug, txHash, payer}` 存入 **localStorage**；reload 时前端直接读缓存全文渲染，**不再打付费端点**，故不重复扣款。localStorage 仅为 UX 加速，**不是服务端鉴权**。
+   - **同浏览器/同钱包刷新** → 读缓存，**不重付**（满足 PRD §3「永久可读」的 UX 说法）。
+   - **清 localStorage / 换浏览器 / 换钱包** → 缓存失效，**需重付**（即 PRD §5 所称「黑客松简化」的退路）。
+   - PRD §3「永久可读」与 §5「每次 reload 都重新付」二者措辞相左，**以本条为准**：默认走 localStorage 缓存，不是每刷必付。录屏时勿手动清缓存以免触发重复扣款。
+   - 生产路径：facilitator webhook → DB 记账做真正的「已付费」鉴权（PRD §5 生产路径）。
 3. **`data/payment-log.json` 写文件**：Serverless / 并发下不可靠。本机 demo 可接受；部署 Vercel 时写文件系统是已知雷（只读 FS / `/tmp` 不持久），DEPLOY.md 标红，生产路径为 facilitator webhook → DB。
 4. **402 body 纪律**：402 响应体只含 payment requirements，**绝不**含一行 markdown 全文，不漏题（PRD §8.3）。companion〔A〕区（术语表/法条地图/误区表）属付费内容，不进公开 scaffold、不进 402 body（PRD §8.6）。
 5. **价格 / payTo 服务端权威**：`maxAmountRequired` 与 `payTo` 一律从 EAS 链上数据取，绝不接受 query 覆盖（PRD §8.1/8.2）。MDX frontmatter 不写 `priceUsd`。
