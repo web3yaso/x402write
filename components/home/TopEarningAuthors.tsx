@@ -25,7 +25,7 @@ export function TopEarningAuthors() {
         {ROWS.map((r) => (
           <div className="lboard-row" key={r.rank}>
             <span className="rank">{r.rank}</span>
-            <div className="pub"><div className="name">{r.name}</div><div className="desc">{r.desc}</div></div>
+            <div className="lb-pub"><div className="name">{r.name}</div><div className="desc">{r.desc}</div></div>
             <span className="col-r c-art">{r.articles}</span>
             <span className="col-r acc">{r.earned}</span>
           </div>
