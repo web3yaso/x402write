@@ -7,14 +7,17 @@ export function truncateAddress(address: string): string {
 }
 
 /**
- * True only when `url` points at a real external article (has a path beyond "/").
+ * True only when `url` is a real external http(s) article (has a path beyond "/").
  * A bare-domain placeholder like `https://mp.weixin.qq.com/` — used as a stand-in
  * on original pieces with no canonical repost — returns false, so "查看原文" stays hidden.
+ * The protocol allowlist also blocks `javascript:`/`data:` hrefs (sourceUrl is
+ * author-supplied frontmatter, so this guards against stored XSS when it is rendered).
  */
 export function isExternalSourceUrl(url?: string): boolean {
   if (!url) return false;
   try {
     const u = new URL(url);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
     return u.pathname.replace(/\/+$/, "") !== "";
   } catch {
     return false;

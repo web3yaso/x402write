@@ -28,4 +28,11 @@ describe("isExternalSourceUrl", () => {
     expect(isExternalSourceUrl("")).toBe(false);
     expect(isExternalSourceUrl("not a url")).toBe(false);
   });
+
+  it("rejects non-http(s) protocols (no javascript:/data: XSS via href)", () => {
+    expect(isExternalSourceUrl("javascript:alert(1)")).toBe(false);
+    expect(isExternalSourceUrl("javascript:void(0)")).toBe(false);
+    expect(isExternalSourceUrl("data:text/html,<script>alert(1)</script>")).toBe(false);
+    expect(isExternalSourceUrl("vbscript:msgbox(1)")).toBe(false);
+  });
 });
