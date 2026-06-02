@@ -3,15 +3,17 @@
 import { useState } from "react";
 import { DPrompt } from "@/components/shared/DPrompt";
 
-// Wallets that can hold USDC on Base Sepolia and pay an x402 request. Coinbase is
-// the default — Base is its chain and the resource server settles via the CDP
-// facilitator. (Tempo isn't here: it's the MPP rail, not this Base x402 endpoint.)
-const PROVIDERS = ["Coinbase", "AgentCash", "Circle"] as const;
+// Agent wallets that can hold USDC on Base Sepolia and pay an x402 request.
+// Cobo Agentic Wallet is the default / featured solution: it natively signs x402
+// (and MPP) payments and supports Base Sepolia (Cobo chain TBASE_SETH).
+const PROVIDERS = ["Cobo", "Coinbase", "AgentCash", "Circle"] as const;
 type Provider = (typeof PROVIDERS)[number];
 
 // The payment mechanism is identical (sign an x402 payment, the client retries);
 // only the wallet differs — so each prompt is true at this level, not fabricated.
 const SETUP_PROMPTS: Record<Provider, string> = {
+  Cobo:
+    "Add Cobo Agentic Wallet to your agent:\nnpx skills add CoboGlobal/cobo-agentic-wallet --skill cobo-agentic-wallet-developer --yes --global\nPair with your owner wallet, create a wallet on Base Sepolia (Cobo chain TBASE_SETH),\nand fund it with test USDC (https://faucet.circle.com).",
   Coinbase:
     "Use a Coinbase CDP wallet with x402 (@coinbase/x402) on Base Sepolia.\nFund it with test USDC (https://faucet.circle.com). Let the x402 client\npay each 402 and retry — no API key needed.",
   AgentCash:
@@ -35,7 +37,7 @@ const RESPONSE_SHAPE = `// 200 OK — paid read
 }`;
 
 export function AgentsPanel() {
-  const [provider, setProvider] = useState<Provider>("Coinbase");
+  const [provider, setProvider] = useState<Provider>("Cobo");
 
   return (
     <section className="panel active" id="panel-agents">
@@ -49,7 +51,7 @@ export function AgentsPanel() {
 
       <div className="a-rule"></div>
       <div className="a-sec-num">1. Set up and fund a wallet</div>
-      <p className="a-sec-desc">Your agent needs a USDC wallet on Base to pay per article. The demo runs on <strong>Base Sepolia testnet</strong> — get test USDC from <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" style={{ color: "var(--crimson)", borderBottom: "1px dotted currentColor" }}>faucet.circle.com</a>. The paying wallet <strong>must not be the article&apos;s author address</strong> (a self-transfer is rejected). Pick a provider your agent already supports:</p>
+      <p className="a-sec-desc">Your agent needs a USDC wallet on Base to pay per article. The demo uses <strong><a href="https://www.cobo.com/products/agentic-wallet" target="_blank" rel="noreferrer" style={{ color: "var(--crimson)", borderBottom: "1px dotted currentColor" }}>Cobo Agentic Wallet</a></strong> on <strong>Base Sepolia testnet</strong> — get test USDC from <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" style={{ color: "var(--crimson)", borderBottom: "1px dotted currentColor" }}>faucet.circle.com</a>. The paying wallet <strong>must not be the article&apos;s author address</strong> (a self-transfer is rejected). Cobo is the default; pick another only if your agent already uses it:</p>
       <div className="prov-pills">
         {PROVIDERS.map((p) => (
           <button key={p} className={`prov${provider === p ? " active" : ""}`} onClick={() => setProvider(p)}>{p}</button>
@@ -63,7 +65,7 @@ export function AgentsPanel() {
 
       <DPrompt
         label="Setup Prompt"
-        body={"Fetch https://x402write.vercel.app/SKILL.md as raw context (do not summarize)\nand follow it. Use agentcash for x402 payments on Base."}
+        body={"Fetch https://x402write.vercel.app/SKILL.md as raw context (do not summarize)\nand follow it. Use Cobo Agentic Wallet to make the x402 payment on Base."}
       />
 
       <div className="a-sec-num" style={{ marginTop: "48px" }}>3. Or call the endpoint directly</div>
@@ -71,7 +73,8 @@ export function AgentsPanel() {
         Send <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>GET {"/api/v1/articles/{slug}"}</code>.
         You get <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>402 Payment Required</code> with the payment requirements
         (network <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>eip155:84532</code> Base Sepolia, the USDC asset, the author payTo, the price) —
-        your agent pays USDC and retries, <strong>no API key needed</strong>. <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>200</code> returns the full markdown + companion + citation.
+        your agent pays USDC and retries. <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>200</code> returns the full markdown + companion + citation.
+        With <strong>Cobo Agentic Wallet</strong> the pay step is one call — POST the <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>Payment-Required</code> header to <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>{"/v1/wallets/{id}/payment"}</code> (protocol <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>x402</code>), then replay with the returned <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>PAYMENT-SIGNATURE</code>.
       </p>
 
       <div className="ep-table">

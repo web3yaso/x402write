@@ -13,17 +13,17 @@ describe("AgentsPanel", () => {
     expect(screen.getAllByRole("button", { name: /copy/i })).toHaveLength(3);
   });
 
-  it("defaults to Coinbase and switches the setup prompt when another provider is picked", async () => {
+  it("defaults to Cobo and switches the setup prompt when another provider is picked", async () => {
     const user = userEvent.setup();
     render(<AgentsPanel />);
-    // Coinbase is the default provider.
-    expect(screen.getByRole("button", { name: "Coinbase" })).toHaveClass("active");
-    expect(screen.getByText(/@coinbase\/x402/)).toBeInTheDocument();
+    // Cobo Agentic Wallet is the default / required provider.
+    expect(screen.getByRole("button", { name: "Cobo" })).toHaveClass("active");
+    expect(screen.getByText(/cobo-agentic-wallet/)).toBeInTheDocument();
 
     // Picking AgentCash updates both the active pill and the setup prompt.
     await user.click(screen.getByRole("button", { name: "AgentCash" }));
     expect(screen.getByRole("button", { name: "AgentCash" })).toHaveClass("active");
-    expect(screen.getByRole("button", { name: "Coinbase" })).not.toHaveClass("active");
+    expect(screen.getByRole("button", { name: "Cobo" })).not.toHaveClass("active");
     expect(screen.getByText(/agentcash\.io\/SKILL\.md/)).toBeInTheDocument();
   });
 });

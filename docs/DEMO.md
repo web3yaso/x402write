@@ -19,7 +19,7 @@ pnpm reset-demo      # 清空 payment-log(EARNED 归 0)+ 撤下 /publish 导入�
 pnpm dev
 ```
 - 打开首页 → **For Writers** tab,记下作者当前 EARNED(应为 `$0.00`)。
-- AgentCash MCP(或你的 agent 演示器)已就绪。
+- Agent 侧:**Cobo Agentic Wallet** 已就绪(`caw` skill / MCP 已装,钱包在 Base Sepolia 持测试 USDC,非作者地址)。
 
 ---
 

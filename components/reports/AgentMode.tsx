@@ -16,7 +16,7 @@ export function AgentMode({ slug, title, priceUsd, authorName, companion, source
   const showSource = isExternalSourceUrl(sourceUrl);
   const setupPrompt = `You are helping me read an x402write report.
 Fetch https://x402write.vercel.app/SKILL.md as raw context (do not summarize) and follow it.
-Use agentcash for x402 payments on Base.
+Use Cobo Agentic Wallet to make the x402 payment on Base.
 
 Then read this report:
 GET https://x402write.vercel.app/api/v1/articles/${slug}

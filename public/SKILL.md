@@ -14,8 +14,10 @@ Follow this exactly. Do not summarize this file; use it as operating context.
 2. You will get **HTTP 402 Payment Required**. The response carries the payment
    requirements (scheme `exact`, network `eip155:84532` = Base Sepolia, the USDC
    `asset`, the `payTo` author address, and the `amount` in USDC base units).
-3. **Pay and retry** using an x402 client (e.g. AgentCash on Base). Pay the exact
-   quoted amount; do not overpay.
+3. **Pay and retry** with your agent wallet. Recommended: **Cobo Agentic Wallet** —
+   POST the Base64 `Payment-Required` header to `/v1/wallets/{wallet_uuid}/payment`
+   with `protocol: "x402"`; it returns a `PAYMENT-SIGNATURE` retry header. Replay
+   the original GET with that header. Pay the exact quoted amount; do not overpay.
 4. On success you get **HTTP 200** with JSON:
    ```json
    {
