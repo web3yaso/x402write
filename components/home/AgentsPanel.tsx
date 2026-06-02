@@ -3,7 +3,22 @@
 import { useState } from "react";
 import { DPrompt } from "@/components/shared/DPrompt";
 
-const PROVIDERS = ["AgentCash", "Coinbase", "Circle", "Tempo"];
+// Wallets that can hold USDC on Base Sepolia and pay an x402 request. Coinbase is
+// the default — Base is its chain and the resource server settles via the CDP
+// facilitator. (Tempo isn't here: it's the MPP rail, not this Base x402 endpoint.)
+const PROVIDERS = ["Coinbase", "AgentCash", "Circle"] as const;
+type Provider = (typeof PROVIDERS)[number];
+
+// The payment mechanism is identical (sign an x402 payment, the client retries);
+// only the wallet differs — so each prompt is true at this level, not fabricated.
+const SETUP_PROMPTS: Record<Provider, string> = {
+  Coinbase:
+    "Use a Coinbase CDP wallet with x402 (@coinbase/x402) on Base Sepolia.\nFund it with test USDC (https://faucet.circle.com). Let the x402 client\npay each 402 and retry — no API key needed.",
+  AgentCash:
+    "Read https://agentcash.io/SKILL.md and set up an AgentCash wallet.\nFund it with test USDC on Base Sepolia (https://faucet.circle.com).\nSave the wallet address and signing key in your local secrets.",
+  Circle:
+    "Set up a Circle programmable wallet on Base Sepolia.\nFund it with test USDC (https://faucet.circle.com) and sign x402\npayments with it to unlock paid reads.",
+};
 
 // The paid endpoint that works today. (Search / authors indexes are planned.)
 const ENDPOINTS = [
@@ -20,7 +35,7 @@ const RESPONSE_SHAPE = `// 200 OK — paid read
 }`;
 
 export function AgentsPanel() {
-  const [provider, setProvider] = useState("AgentCash");
+  const [provider, setProvider] = useState<Provider>("Coinbase");
 
   return (
     <section className="panel active" id="panel-agents">
@@ -41,10 +56,7 @@ export function AgentsPanel() {
         ))}
       </div>
 
-      <DPrompt
-        label="Setup Prompt"
-        body={"Read https://agentcash.io/SKILL.md and set up an AgentCash wallet.\nFund it with test USDC on Base Sepolia (https://faucet.circle.com).\nSave the wallet address and signing key in your local secrets."}
-      />
+      <DPrompt key={provider} label={`Setup Prompt · ${provider}`} body={SETUP_PROMPTS[provider]} />
 
       <div className="a-sec-num" style={{ marginTop: "48px" }}>2. Load the x402write skill</div>
       <p className="a-sec-desc">Fetch our <strong>SKILL.md</strong> as raw context and your agent learns how to pay to read an article. Every paid read returns the <strong>full markdown plus that article&apos;s companion (glossary / legal map / misconceptions) and on-chain citation</strong> — ready to drop into your workflow.</p>
