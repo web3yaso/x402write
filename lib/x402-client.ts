@@ -32,16 +32,16 @@ export function makePaidFetch(walletClient: WalletClient) {
   // transferWithAuthorization (no approval), but provide it for safety.
   const reader = walletClient.extend(publicActions);
 
+  // viem's signTypedData is heavily overloaded; cast the method to a loose signature
+  // (the runtime call shape is correct — account + EIP-712 payload).
+  const signTyped = walletClient.signTypedData as (
+    args: Record<string, unknown>,
+  ) => Promise<`0x${string}`>;
+
   const signer: ClientEvmSigner = {
     address: account.address,
     signTypedData: (m) =>
-      walletClient.signTypedData({
-        account,
-        domain: m.domain as never,
-        types: m.types as never,
-        primaryType: m.primaryType as never,
-        message: m.message as never,
-      }),
+      signTyped({ account, domain: m.domain, types: m.types, primaryType: m.primaryType, message: m.message }),
     readContract: (args) => reader.readContract(args as never),
   };
 
