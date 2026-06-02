@@ -31,9 +31,18 @@ describe("ReadersPanel", () => {
     expect(screen.getByText("$0.30")).toBeInTheDocument();
   });
 
-  it("navigates to /reports when Find is clicked", async () => {
+  it("routes the sample web3-employment question (empty input → placeholder) to 违法用工", async () => {
     const user = userEvent.setup();
     render(<ReadersPanel articles={ARTICLES} />);
+    await user.click(screen.getByRole("button", { name: "Find" }));
+    expect(push).toHaveBeenCalledWith("/reports/web3-illegal-employment");
+  });
+
+  it("falls back to the full catalog for an unmatched query", async () => {
+    push.mockClear();
+    const user = userEvent.setup();
+    render(<ReadersPanel articles={ARTICLES} />);
+    await user.type(screen.getByRole("textbox"), "今天天气怎么样");
     await user.click(screen.getByRole("button", { name: "Find" }));
     expect(push).toHaveBeenCalledWith("/reports");
   });

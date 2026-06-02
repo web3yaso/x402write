@@ -1,12 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { routeForQuery } from "@/lib/query-route";
 import type { PublishedReport } from "@/lib/reports";
+
+const SAMPLE_QUESTION = "为 web3 公司工作,有什么风险?";
 
 export function ReadersPanel({ articles }: { articles: PublishedReport[] }) {
   const router = useRouter();
-  const find = () => router.push("/reports");
+  const [query, setQuery] = useState("");
+  // Empty input → demo the sample question; otherwise route by the reader's text.
+  const find = () => router.push(routeForQuery(query.trim() || SAMPLE_QUESTION));
 
   // "Supported Authors" chips = the distinct authors of the catalog articles.
   const chips = Array.from(
@@ -24,7 +30,9 @@ export function ReadersPanel({ articles }: { articles: PublishedReport[] }) {
       <div className="big-input">
         <input
           type="text"
-          placeholder="我的工行卡因 OTC 出金被冻结,下一步怎么办?"
+          placeholder={SAMPLE_QUESTION}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") find(); }}
         />
         <button onClick={find}>Find</button>
