@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useAccount, useConnect, useWalletClient } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
+import { createWalletClient, custom, type EIP1193Provider } from "viem";
+import { baseSepolia } from "viem/chains";
 import { unlockArticle, type ArticlePaid } from "@/lib/x402-client";
 
 const cacheKey = (slug: string) => `x402write_unlocked_${slug}`;
@@ -19,9 +21,8 @@ export function UnlockGate({
   renderFull: (full: ArticlePaid) => React.ReactNode;
   ctaClassName?: string;
 }) {
-  const { isConnected } = useAccount();
+  const { isConnected, address, connector } = useAccount();
   const { connect } = useConnect();
-  const { data: walletClient } = useWalletClient();
   const [full, setFull] = useState<ArticlePaid | null>(null);
   const [status, setStatus] = useState<"idle" | "paying" | "error">("idle");
   const [err, setErr] = useState<string | null>(null);
@@ -37,16 +38,20 @@ export function UnlockGate({
 
   async function onUnlock() {
     setErr(null);
-    if (!isConnected) {
+    if (!isConnected || !address || !connector?.getProvider) {
       connect({ connector: injected({ target: "metaMask" }) });
-      return;
-    }
-    if (!walletClient) {
-      setErr("钱包客户端加载中,请稍候重试");
       return;
     }
     setStatus("paying");
     try {
+      // Build the wallet client on-demand from the live connector provider —
+      // avoids the reactive useWalletClient() hook lagging after cookie reconnect.
+      const provider = (await connector.getProvider()) as EIP1193Provider;
+      const walletClient = createWalletClient({
+        account: address,
+        chain: baseSepolia,
+        transport: custom(provider),
+      });
       const data = await unlockArticle(walletClient, slug);
       localStorage.setItem(cacheKey(slug), JSON.stringify(data));
       setFull(data);
