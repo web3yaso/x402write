@@ -1,13 +1,28 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+type Mode = "human" | "agent";
+
+/**
+ * Human/Agent reading toggle. The chosen mode lives in the URL (`?view=agent`) so
+ * the two tabs are distinct, shareable, bookmarkable URLs; human is the default
+ * (bare path). The URL is the source of truth — back/forward and shared links work.
+ */
 export function ArticleModeToggle({ human, agent }: { human: React.ReactNode; agent: React.ReactNode }) {
-  const [mode, setMode] = useState<"human" | "agent">("human");
-  useEffect(() => {
-    const saved = localStorage.getItem("x402write_article_mode");
-    if (saved === "agent" || saved === "human") setMode(saved);
-  }, []);
-  function pick(m: "human" | "agent") { setMode(m); localStorage.setItem("x402write_article_mode", m); }
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const urlMode: Mode = searchParams.get("view") === "agent" ? "agent" : "human";
+
+  const [mode, setMode] = useState<Mode>(urlMode);
+  useEffect(() => setMode(urlMode), [urlMode]);
+
+  function pick(m: Mode) {
+    setMode(m);
+    router.replace(m === "agent" ? `${pathname}?view=agent` : pathname, { scroll: false });
+  }
+
   return (
     <>
       {mode === "human" ? human : agent}
