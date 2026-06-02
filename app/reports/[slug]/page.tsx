@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { getPublishedReport, getReportBody } from "@/lib/reports";
 import { previewSlice } from "@/lib/preview";
+import { getCompanionPublic } from "@/lib/companions";
 import { ArticleBody } from "@/components/reports/ArticleBody";
 import { Paywall } from "@/components/reports/Paywall";
+import { AgentMode } from "@/components/reports/AgentMode";
+import { ArticleModeToggle } from "@/components/reports/ArticleModeToggle";
 
 export default async function ReportDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -10,8 +13,10 @@ export default async function ReportDetail({ params }: { params: Promise<{ slug:
   if (!report) notFound();
   const preview = previewSlice(getReportBody(slug), 0.24);
   const easUrl = `https://base-sepolia.easscan.org/attestation/view/${report.record.attestationUID}`;
-  return (
-    <div className="article">
+  const companion = getCompanionPublic(slug);
+
+  const humanView = (
+    <>
       <header className="hm-mast">
         <a href="/" className="hm-brand"><span className="mark"></span>x402write</a>
         <a href="/reports" className="hm-back">← 收录目录</a>
@@ -36,6 +41,22 @@ export default async function ReportDetail({ params }: { params: Promise<{ slug:
           <Paywall priceUsd={report.priceUsd} authorName={report.meta.authorName} />
         </article>
       </div>
+    </>
+  );
+
+  const agentView = (
+    <AgentMode
+      slug={slug}
+      title={report.meta.title}
+      priceUsd={report.priceUsd}
+      authorName={report.meta.authorName}
+      companion={companion}
+    />
+  );
+
+  return (
+    <div className="article">
+      <ArticleModeToggle human={humanView} agent={agentView} />
     </div>
   );
 }
