@@ -37,8 +37,12 @@ export function UnlockGate({
 
   async function onUnlock() {
     setErr(null);
-    if (!isConnected || !walletClient) {
+    if (!isConnected) {
       connect({ connector: injected({ target: "metaMask" }) });
+      return;
+    }
+    if (!walletClient) {
+      setErr("钱包客户端加载中,请稍候重试");
       return;
     }
     setStatus("paying");

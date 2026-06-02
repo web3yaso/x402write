@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { cookieToInitialState } from "wagmi";
 import "./globals.css";
 import { Providers } from "./providers";
+import { wagmiConfig } from "@/lib/wagmi-config";
 
 export const metadata: Metadata = {
   title: "x402write — Ask a Chinese crypto compliance writer anything.",
   description: "On-chain attested expert reports, unlocked per-read via x402.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const initialState = cookieToInitialState(wagmiConfig, (await headers()).get("cookie"));
   return (
     <html lang="zh-CN">
       <head>
@@ -19,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers initialState={initialState}>{children}</Providers>
       </body>
     </html>
   );
