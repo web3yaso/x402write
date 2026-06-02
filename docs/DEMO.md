@@ -9,7 +9,7 @@ EAS 与 x402 结算均可在区块浏览器验证。对应验收标准见 [HACKA
 
 **两个钱包(关键:互不相同,且都不是作者收款地址)**
 - **作者钱包**:`/publish` 签名发布用;有少量 Base Sepolia ETH 付 gas。
-- **读者钱包**:付费解锁用;在 Base Sepolia 持有 **≥ $1 测试 USDC**(faucet.circle.com),
+- **读者钱包**:付费解锁用;在 Base Sepolia 持有 **≥ $1 测试 USDC**(faucet 见 docs.base.org/base-chain/network-information/network-faucets,Coinbase CDP faucet 发 USDC),
   且**不能等于文章作者地址**(自付会被 facilitator 拒:`self_send_not_allowed`)。
 - MetaMask 网络切到 **Base Sepolia (84532)**。
 
@@ -58,7 +58,7 @@ pnpm dev
 | 现象 | 原因 / 处理 |
 |---|---|
 | 解锁报「无法购买自己的文章」 | 读者钱包 = 作者地址。换一个非作者钱包。 |
-| 解锁报「测试 USDC 余额不足」 | 去 faucet.circle.com 领 Base Sepolia USDC;确认网络是 84532。 |
+| 解锁报「测试 USDC 余额不足」 | 去 Base faucet 领 USDC(docs.base.org → network-faucets,CDP faucet 发 USDC);确认网络是 84532。 |
 | 解锁报「网络不匹配」 | MetaMask 切到 Base Sepolia (84532)。 |
 | EARNED 没涨 | 确认在 For Writers tab 且已刷新;本地跑(非 Vercel)才会持久化(见 DEPLOY.md)。 |
 | 发布后文章没出现 | 本地 dev 才写目录;Vercel 上 `/publish` 不持久化(只读 FS,见 DEPLOY.md)。 |

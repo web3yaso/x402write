@@ -79,8 +79,9 @@ pnpm tsx scripts/eas-register-schema.ts
 pnpm tsx scripts/seed-attest.ts yaoqian-crypto-liability web3-illegal-employment
 ```
 
-`DEMO_AUTHOR_PRIVATE_KEY` 对应钱包需要少量 Base Sepolia ETH 付 gas
-(https://www.alchemy.com/faucets/base-sepolia)。
+`DEMO_AUTHOR_PRIVATE_KEY` 对应钱包需要少量 Base Sepolia ETH 付 gas;
+faucet 列表见 https://docs.base.org/base-chain/network-information/network-faucets
+(Coinbase CDP faucet 同时发 ETH + 测试 USDC)。
 
 ---
 

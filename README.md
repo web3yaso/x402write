@@ -37,7 +37,7 @@ pnpm dev                               # http://localhost:3000
 pnpm test                              # 全量单测(Vitest)
 ```
 
-付费解锁需要:读者钱包在 **Base Sepolia** 上持有测试 USDC(faucet.circle.com),
+付费解锁需要:读者钱包在 **Base Sepolia** 上持有测试 USDC(faucet 见 [docs.base.org/base-chain/network-information/network-faucets](https://docs.base.org/base-chain/network-information/network-faucets)),
 且**不能是文章作者本人地址**(自付会被拒)。
 
 ## 常用脚本

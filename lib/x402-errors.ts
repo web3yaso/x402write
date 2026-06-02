@@ -24,13 +24,13 @@ export function explainPaymentError(reason: string): string {
     case "self_send_not_allowed":
       return "无法购买自己的文章:当前钱包就是作者收款地址,请切换到另一个(读者)钱包再购买。";
     case "invalid_exact_evm_insufficient_balance":
-      return "测试 USDC 余额不足:请在 faucet.circle.com 领取 Base Sepolia USDC(≥本文价格)后重试。";
+      return "测试 USDC 余额不足:请在 docs.base.org/base-chain/network-information/network-faucets 领取 Base Sepolia USDC(≥本文价格)后重试。";
     case "invalid_exact_evm_network_mismatch":
       return "网络不匹配:请将钱包切换到 Base Sepolia 测试网(chainId 84532)后重试。";
     case "invalid_exact_evm_nonce_already_used":
       return "该笔授权已被使用,请刷新页面后重新发起支付。";
     case "":
-      return "支付未完成:请确认钱包已切到 Base Sepolia 测试网,且持有足额测试 USDC(faucet.circle.com),然后重试。";
+      return "支付未完成:请确认钱包已切到 Base Sepolia 测试网,且持有足额测试 USDC(docs.base.org/base-chain/network-information/network-faucets),然后重试。";
     default:
       return `支付未完成(${reason})。请确认钱包在 Base Sepolia 测试网、持有足额测试 USDC,且不是作者本人地址。`;
   }

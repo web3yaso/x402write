@@ -31,7 +31,7 @@ Follow this exactly. Do not summarize this file; use it as operating context.
 
 ## Wallet requirements (or you stay at 402)
 
-- Be funded with **test USDC on Base Sepolia** (faucet: https://faucet.circle.com).
+- Be funded with **test USDC on Base Sepolia** (faucets: https://docs.base.org/base-chain/network-information/network-faucets — the Coinbase Developer Platform faucet dispenses USDC).
 - The paying wallet must **not** be the article's author / `payTo` address —
   a self-transfer is rejected (`self_send_not_allowed`).
 - A 402 *after* paying means settlement failed; the reason is in the re-issued

@@ -13,13 +13,13 @@ type Provider = (typeof PROVIDERS)[number];
 // only the wallet differs — so each prompt is true at this level, not fabricated.
 const SETUP_PROMPTS: Record<Provider, string> = {
   Cobo:
-    "Add Cobo Agentic Wallet to your agent:\nnpx skills add CoboGlobal/cobo-agentic-wallet --skill cobo-agentic-wallet-developer --yes --global\nPair with your owner wallet, create a wallet on Base Sepolia (Cobo chain TBASE_SETH),\nand fund it with test USDC (https://faucet.circle.com).",
+    "Add Cobo Agentic Wallet to your agent:\nnpx skills add CoboGlobal/cobo-agentic-wallet --skill cobo-agentic-wallet-developer --yes --global\nPair with your owner wallet, create a wallet on Base Sepolia (Cobo chain TBASE_SETH),\nand fund it with test USDC (https://docs.base.org/base-chain/network-information/network-faucets).",
   Coinbase:
-    "Use a Coinbase CDP wallet with x402 (@coinbase/x402) on Base Sepolia.\nFund it with test USDC (https://faucet.circle.com). Let the x402 client\npay each 402 and retry — no API key needed.",
+    "Use a Coinbase CDP wallet with x402 (@coinbase/x402) on Base Sepolia.\nFund it with test USDC (https://docs.base.org/base-chain/network-information/network-faucets). Let the x402 client\npay each 402 and retry — no API key needed.",
   AgentCash:
-    "Read https://agentcash.io/SKILL.md and set up an AgentCash wallet.\nFund it with test USDC on Base Sepolia (https://faucet.circle.com).\nSave the wallet address and signing key in your local secrets.",
+    "Read https://agentcash.io/SKILL.md and set up an AgentCash wallet.\nFund it with test USDC on Base Sepolia (https://docs.base.org/base-chain/network-information/network-faucets).\nSave the wallet address and signing key in your local secrets.",
   Circle:
-    "Set up a Circle programmable wallet on Base Sepolia.\nFund it with test USDC (https://faucet.circle.com) and sign x402\npayments with it to unlock paid reads.",
+    "Set up a Circle programmable wallet on Base Sepolia.\nFund it with test USDC (https://docs.base.org/base-chain/network-information/network-faucets) and sign x402\npayments with it to unlock paid reads.",
 };
 
 // The paid endpoint that works today. (Search / authors indexes are planned.)
@@ -51,7 +51,7 @@ export function AgentsPanel() {
 
       <div className="a-rule"></div>
       <div className="a-sec-num">1. Set up and fund a wallet</div>
-      <p className="a-sec-desc">Your agent needs a USDC wallet on Base to pay per article. The demo uses <strong><a href="https://www.cobo.com/products/agentic-wallet" target="_blank" rel="noreferrer" style={{ color: "var(--crimson)", borderBottom: "1px dotted currentColor" }}>Cobo Agentic Wallet</a></strong> on <strong>Base Sepolia testnet</strong> — get test USDC from <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" style={{ color: "var(--crimson)", borderBottom: "1px dotted currentColor" }}>faucet.circle.com</a>. The paying wallet <strong>must not be the article&apos;s author address</strong> (a self-transfer is rejected). Cobo is the default; pick another only if your agent already uses it:</p>
+      <p className="a-sec-desc">Your agent needs a USDC wallet on Base to pay per article. The demo uses <strong><a href="https://www.cobo.com/products/agentic-wallet" target="_blank" rel="noreferrer" style={{ color: "var(--crimson)", borderBottom: "1px dotted currentColor" }}>Cobo Agentic Wallet</a></strong> on <strong>Base Sepolia testnet</strong> — get test USDC + gas from a <a href="https://docs.base.org/base-chain/network-information/network-faucets" target="_blank" rel="noreferrer" style={{ color: "var(--crimson)", borderBottom: "1px dotted currentColor" }}>Base Sepolia faucet</a>. The paying wallet <strong>must not be the article&apos;s author address</strong> (a self-transfer is rejected). Cobo is the default; pick another only if your agent already uses it:</p>
       <div className="prov-pills">
         {PROVIDERS.map((p) => (
           <button key={p} className={`prov${provider === p ? " active" : ""}`} onClick={() => setProvider(p)}>{p}</button>
