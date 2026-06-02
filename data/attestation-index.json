@@ -8,5 +8,25 @@
     "publishedAt": 1770595200,
     "version": 1,
     "disclaimerHash": "0x7c034b1cd844c62a4c1da265d62c911b9de023b68b3207b28e6139f261489fb5"
+  },
+  {
+    "slug": "yaoqian-crypto-liability",
+    "attestationUID": "0xf6ea2211bebc8c26b77b0dfd02b7c78e759f887bc9c6af47a49150c404fa837f",
+    "txHash": "0x9a6da92646f57bda1efe105f0212538a6f3da2342bfe6b9ed4c32fc755047680",
+    "author": "0x8dF5f05aB4E88d70ED0F0714b7210c5840F38e1D",
+    "priceUSDC": "300000",
+    "publishedAt": 1769904000,
+    "version": 1,
+    "disclaimerHash": "0x7c034b1cd844c62a4c1da265d62c911b9de023b68b3207b28e6139f261489fb5"
+  },
+  {
+    "slug": "web3-illegal-employment",
+    "attestationUID": "0xd2f61d4796272bf244d1755e13481f53f496091fcb2f6748fd24a002d8f5f0c6",
+    "txHash": "0x67e13ff061980dcd7161d5ff02a6541ba01059def1441292a9ca2083d51ce465",
+    "author": "0x8dF5f05aB4E88d70ED0F0714b7210c5840F38e1D",
+    "priceUSDC": "250000",
+    "publishedAt": 1770336000,
+    "version": 1,
+    "disclaimerHash": "0x7c034b1cd844c62a4c1da265d62c911b9de023b68b3207b28e6139f261489fb5"
   }
 ]
