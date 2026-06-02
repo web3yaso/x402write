@@ -56,6 +56,14 @@ export async function unlockArticle(
 ): Promise<ArticlePaid> {
   const paidFetch = makePaidFetch(walletClient);
   const res = await paidFetch(`/api/v1/articles/${slug}`);
+  // A 402 *after* the paid retry means the signed payment didn't settle — almost
+  // always because the connected wallet lacks test USDC on Base Sepolia (or is on
+  // the wrong network). Surface that instead of an opaque status code.
+  if (res.status === 402) {
+    throw new Error(
+      "支付未完成:请确认钱包已切到 Base Sepolia 测试网,且持有足额测试 USDC(可在 faucet.circle.com 领取 Base Sepolia USDC),然后重试。",
+    );
+  }
   if (!res.ok) throw new Error(`unlock failed: ${res.status}`);
   return (await res.json()) as ArticlePaid;
 }
