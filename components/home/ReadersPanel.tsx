@@ -2,30 +2,23 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { PublishedReport } from "@/lib/reports";
 
-const ARTICLES = [
-  {
-    cat: "Governance · 跨境",
-    price: "$0.30",
-    q: "重构链上契约:从 DAO 的治理困局到 RWA 的资产编程革命",
-    how: "链上合伙制(劳动主导资本)范式 · 数字权益单元的法律定义 · RWA 三层资产编程终局",
-    author: "Alex Fan · LXDAO · 公众号",
-    href: "/reports/onchain-partnership-rwa",
-  },
-];
-
-const CHIPS = [
-  ["Alex Fan", "LXDAO"],
-];
-
-export function ReadersPanel() {
+export function ReadersPanel({ articles }: { articles: PublishedReport[] }) {
   const router = useRouter();
   const find = () => router.push("/reports");
+
+  // "Supported Authors" chips = the distinct authors of the catalog articles.
+  const chips = Array.from(
+    new Map(
+      articles.map((a) => [a.meta.authorName, a.meta.authorOrg ?? a.meta.tags[1] ?? ""]),
+    ).entries(),
+  );
 
   return (
     <section className="panel active" id="panel-readers">
       <h1 className="display">你的问题,<em>已经有人写过答案</em>。</h1>
-      <p className="sub">搜索你的处境,付费阅读实名律师写的对应文章,即得答案。</p>
+      <p className="sub">搜索你的处境,付费阅读实名作者写的对应文章,即得答案。</p>
       <p className="powered">Powered by MPP on Tempo and x402 on Base</p>
 
       <div className="big-input">
@@ -41,20 +34,25 @@ export function ReadersPanel() {
       <div className="sec-title" style={{ fontSize: "21px", fontWeight: 700 }}>收录文章</div>
       <p className="guide-lead">每篇都由实名作者汇编自真实案例。付费后不仅能读到全文,还附场景 prompt —— 复制丢进你常用的 AI,帮你把文章用到自己的处境上,理解并解决问题。</p>
       <div className="guide-grid">
-        {ARTICLES.map((a, i) => (
-          <Link className="guide-card" href={a.href} key={i}>
-            <div className="g-top"><span className="g-cat">{a.cat}</span><span className="g-price">{a.price}</span></div>
-            <div className="g-q">{a.q}</div>
-            <div className="g-how">{a.how}</div>
-            <div className="g-foot"><span className="g-author">{a.author}</span></div>
+        {articles.map((a) => (
+          <Link className="guide-card" href={`/reports/${a.meta.slug}`} key={a.meta.slug}>
+            <div className="g-top">
+              <span className="g-cat">{a.meta.tags[0]}</span>
+              <span className="g-price">{a.priceUsd}</span>
+            </div>
+            <div className="g-q">{a.meta.title}</div>
+            <div className="g-how">{a.meta.summary}</div>
+            <div className="g-foot">
+              <span className="g-author">{a.meta.authorName}{a.meta.authorOrg ? ` · ${a.meta.authorOrg}` : ""}</span>
+            </div>
           </Link>
         ))}
       </div>
 
       <div className="sec-title muted" style={{ marginTop: "48px" }}>Supported Authors</div>
       <div className="chips">
-        {CHIPS.map(([name, via], i) => (
-          <span className="chip" key={i}>{name} <span className="via">· {via}</span></span>
+        {chips.map(([name, via]) => (
+          <span className="chip" key={name}>{name}{via ? <span className="via"> · {via}</span> : null}</span>
         ))}
       </div>
 
