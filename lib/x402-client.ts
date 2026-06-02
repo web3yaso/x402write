@@ -3,25 +3,12 @@
  *
  * Browser-side paid fetch using the connected wagmi/MetaMask wallet.
  *
- * Registration API used:
- *   import { registerExactEvmScheme } from "@x402/evm/exact/client"
- *   registerExactEvmScheme(client, { signer: signer as ClientEvmSigner })
- *
- * Why this path (not "@x402/evm/exact/client/register"):
- *   The "@x402/evm" package.json `exports` has no "./exact/client/register"
- *   subpath — only "./exact/client". The `registerExactEvmScheme` function
- *   and the `ExactEvmScheme` class are both exported from that single entry.
- *
- * Why the cast:
- *   `ClientEvmSigner` requires `readonly address: \`0x\${string}\`` at the
- *   top level. A viem WalletClient stores the address at `client.account.address`,
- *   so the structural check fails even though the runtime shape is correct and
- *   the x402 SDK accesses `signer.address` which is actually `client.address`
- *   (viem proxies it). The cast is safe; the runtime shape satisfies the contract.
- *
- * schemeOptions.rpcUrl:
- *   Not passed — the injected wallet (MetaMask, via publicActions) handles all
- *   on-chain reads through the browser provider. No explicit RPC URL needed.
+ * The x402 exact-EVM client needs a `ClientEvmSigner`: an object with a top-level
+ * `address` + `signTypedData` (and optional `readContract` for ERC-20 enrichment).
+ * A viem WalletClient does NOT expose a top-level `.address` (it's at
+ * `walletClient.account.address`), so we build the signer explicitly — delegating
+ * `signTypedData` to the wallet and `readContract` to publicActions — instead of
+ * casting the WalletClient (whose `.address` is undefined at runtime).
  */
 import { x402Client } from "@x402/core/client";
 import { type ClientEvmSigner } from "@x402/evm";
@@ -38,20 +25,28 @@ export type ArticlePaid = {
 };
 
 export function makePaidFetch(walletClient: WalletClient) {
-  // Extend with publicActions so readContract, estimateFeesPerGas, etc. are
-  // available (satisfies ClientEvmSigner's optional capability requirements).
-  const extended = walletClient.extend(publicActions);
+  const account = walletClient.account;
+  if (!account) throw new Error("wallet not connected");
 
-  // Cast required: viem WalletClient exposes address at client.account.address
-  // but ClientEvmSigner expects it directly at signer.address. At runtime viem
-  // proxies .address → .account.address, so the shape is correct.
-  const signer = extended as unknown as ClientEvmSigner;
+  // readContract is only needed for ERC-20 approval enrichment; USDC uses EIP-3009
+  // transferWithAuthorization (no approval), but provide it for safety.
+  const reader = walletClient.extend(publicActions);
+
+  const signer: ClientEvmSigner = {
+    address: account.address,
+    signTypedData: (m) =>
+      walletClient.signTypedData({
+        account,
+        domain: m.domain as never,
+        types: m.types as never,
+        primaryType: m.primaryType as never,
+        message: m.message as never,
+      }),
+    readContract: (args) => reader.readContract(args as never),
+  };
 
   const client = new x402Client();
-  // Registers wildcard eip155:* (V2) + all supported EVM networks (V1).
-  // No schemeOptions.rpcUrl needed — MetaMask provider handles reads via publicActions.
   registerExactEvmScheme(client, { signer });
-
   return wrapFetchWithPayment(globalThis.fetch, client);
 }
 
