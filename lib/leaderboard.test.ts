@@ -2,13 +2,14 @@ import { describe, it, expect } from "vitest";
 import { listLeaderboard, getWriterStats } from "./leaderboard";
 
 describe("leaderboard", () => {
-  it("includes every published author (by name), even with no payments, at $0.00+", () => {
+  it("includes seed authors (by name), even with no payments, at $0.00+", () => {
     const rows = listLeaderboard();
-    const alex = rows.find((r) => r.name === "Alex Fan");
+    // The seed catalog (姚前案 + 违法用工) is always present; the DAO import-example
+    // may be absent (reset for the live /publish demo), so don't assert on Alex Fan.
     const lawson = rows.find((r) => r.name === "Lawson Riskman");
-    expect(alex).toBeTruthy();
     expect(lawson).toBeTruthy();
     expect(lawson!.articles).toBe("2"); // 姚前案 + 违法用工
+    expect(rows.length).toBeGreaterThanOrEqual(1);
     expect(rows[0].earned).toMatch(/^\$\d/);
     expect(rows[0].rank).toBe("01");
   });

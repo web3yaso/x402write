@@ -1,19 +1,9 @@
 [
   {
-    "slug": "onchain-partnership-rwa",
-    "attestationUID": "0x94b2ed1934af6ab7173fcb553391cbda3e847eda50465f8147a44e4014949beb",
-    "txHash": "0xd4864582020789fa4f7d2f71e30b0a46ff7b0546c953f2d21c150539af2ad65f",
-    "author": "0x8dF5f05aB4E88d70ED0F0714b7210c5840F38e1D",
-    "priceUSDC": "300000",
-    "publishedAt": 1770595200,
-    "version": 1,
-    "disclaimerHash": "0x7c034b1cd844c62a4c1da265d62c911b9de023b68b3207b28e6139f261489fb5"
-  },
-  {
     "slug": "yaoqian-crypto-liability",
-    "attestationUID": "0xf6ea2211bebc8c26b77b0dfd02b7c78e759f887bc9c6af47a49150c404fa837f",
-    "txHash": "0x9a6da92646f57bda1efe105f0212538a6f3da2342bfe6b9ed4c32fc755047680",
-    "author": "0x8dF5f05aB4E88d70ED0F0714b7210c5840F38e1D",
+    "attestationUID": "0x400ec32e9f9698af02b94351903b4442908238038f380be58d6fb944a07748c7",
+    "txHash": "0xf3ff00ff4716f3eb4325b15cc92770740e82357f0dcd87ba22cf7100f0ba2630",
+    "author": "0xCC2D5DC5148d8Ad52Da32bd7C6B6F9d43510A392",
     "priceUSDC": "300000",
     "publishedAt": 1769904000,
     "version": 1,
@@ -21,9 +11,9 @@
   },
   {
     "slug": "web3-illegal-employment",
-    "attestationUID": "0xd2f61d4796272bf244d1755e13481f53f496091fcb2f6748fd24a002d8f5f0c6",
-    "txHash": "0x67e13ff061980dcd7161d5ff02a6541ba01059def1441292a9ca2083d51ce465",
-    "author": "0x8dF5f05aB4E88d70ED0F0714b7210c5840F38e1D",
+    "attestationUID": "0x925cc3ea6dc3bf8361695f4e1c7764e5c9f4d82d6536db34ac7291c796067e2d",
+    "txHash": "0xb55a1a5ded563813b54309470775ceb32d06777d41e2405f0a810dc80d4cebc6",
+    "author": "0xCC2D5DC5148d8Ad52Da32bd7C6B6F9d43510A392",
     "priceUSDC": "250000",
     "publishedAt": 1770336000,
     "version": 1,

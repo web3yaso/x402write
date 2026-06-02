@@ -35,6 +35,14 @@ const PRICE_USD: Record<string, string> = {
   "web3-illegal-employment": "0.25",
 };
 const DEFAULT_PRICE = "0.30";
+
+// Per-slug author wallet (payTo). The attestation is signed by DEMO_AUTHOR_PRIVATE_KEY
+// (the platform seeder) but records this address as the article's author/recipient,
+// so payments route to the real author wallet — not the seeder. Defaults to the signer.
+const AUTHOR_BY_SLUG: Record<string, string> = {
+  "yaoqian-crypto-liability": "0xCC2D5DC5148d8Ad52Da32bd7C6B6F9d43510A392", // web3law / Lawson Riskman
+  "web3-illegal-employment": "0xCC2D5DC5148d8Ad52Da32bd7C6B6F9d43510A392",
+};
 const DISCLAIMER =
   "本文为作者个人观点,不构成法律意见。读者应结合自身情况并咨询持牌专业人士。";
 
@@ -65,21 +73,22 @@ async function main() {
     const contentHash = keccak256(toBytes(body));
     const priceUSDC = parseUnits(PRICE_USD[slug] ?? DEFAULT_PRICE, 6);
     const publishedAt = BigInt(Math.floor(Date.parse(meta.publishedAt) / 1000));
+    const articleAuthor = AUTHOR_BY_SLUG[slug] ?? author; // payTo = real author wallet
 
     const data = encodeAttestationData({
-      contentHash, author, priceUSDC, slug, title: meta.title, publishedAt, version: 1, disclaimer: DISCLAIMER,
+      contentHash, author: articleAuthor, priceUSDC, slug, title: meta.title, publishedAt, version: 1, disclaimer: DISCLAIMER,
     });
-    console.log(`attesting ${slug} (price ${PRICE_USD[slug] ?? DEFAULT_PRICE})…`);
+    console.log(`attesting ${slug} (price ${PRICE_USD[slug] ?? DEFAULT_PRICE}, payTo ${articleAuthor})…`);
     const tx = await eas.attest({
       schema: schemaUID,
-      data: { recipient: author, expirationTime: 0n, revocable: true, refUID: "0x" + "0".repeat(64), data },
+      data: { recipient: articleAuthor, expirationTime: 0n, revocable: true, refUID: "0x" + "0".repeat(64), data },
     });
     const uid = await tx.wait();
     appendIndex({
       slug,
       attestationUID: uid,
       txHash: tx.receipt?.hash ?? uid,
-      author,
+      author: articleAuthor,
       priceUSDC: priceUSDC.toString(),
       publishedAt: Number(publishedAt),
       version: 1,
