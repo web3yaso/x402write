@@ -42,6 +42,10 @@ export function hasSlug(slug: string): boolean {
   return readIndex().some((r) => r.slug === slug);
 }
 
+export function findRecord(slug: string): AttestationRecord | undefined {
+  return readIndex().find((r) => r.slug === slug);
+}
+
 /**
  * First-write-wins: a slug can only be claimed once. This prevents an attacker
  * from re-attesting an existing slug as themselves and REPLACING the record
