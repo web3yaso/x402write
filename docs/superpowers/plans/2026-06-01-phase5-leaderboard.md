@@ -18,7 +18,7 @@
 
 **Files:** `lib/leaderboard.ts`, `lib/leaderboard.test.ts`
 
-- [ ] **Step 1: Failing test** — `lib/leaderboard.test.ts` (the seed `onchain-partnership-rwa` is in the index; payment-log may be empty → seed author appears at $0.00):
+- [x] **Step 1: Failing test** — `lib/leaderboard.test.ts` (the seed `onchain-partnership-rwa` is in the index; payment-log may be empty → seed author appears at $0.00):
 ```ts
 import { describe, it, expect } from "vitest";
 import { listLeaderboard, getWriterStats } from "./leaderboard";
@@ -49,9 +49,9 @@ describe("leaderboard", () => {
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.** `pnpm test lib/leaderboard.test.ts`
+- [x] **Step 2: Run → FAIL.** `pnpm test lib/leaderboard.test.ts`
 
-- [ ] **Step 3: Implement `lib/leaderboard.ts`:**
+- [x] **Step 3: Implement `lib/leaderboard.ts`:**
 ```ts
 import { readIndex } from "./attestation-index";
 import { readPaymentLog } from "./payment-log";
@@ -130,7 +130,7 @@ export function getWriterStats(): WriterStats {
 }
 ```
 
-- [ ] **Step 4: Run → PASS.** `pnpm test lib/leaderboard.test.ts`. Then full `pnpm test`. Commit:
+- [x] **Step 4: Run → PASS.** `pnpm test lib/leaderboard.test.ts`. Then full `pnpm test`. Commit:
 ```bash
 git add lib/leaderboard.ts lib/leaderboard.test.ts
 git commit -m "feat: leaderboard aggregate from payment-log + index (Phase 5 T1)"
@@ -142,7 +142,7 @@ git commit -m "feat: leaderboard aggregate from payment-log + index (Phase 5 T1)
 
 **Files:** `app/page.tsx`, `components/home/HomeTabs.tsx`, `components/home/WritersPanel.tsx`, `components/home/TopEarningAuthors.tsx`
 
-- [ ] **Step 1: `app/page.tsx` (server)** — compute the aggregate and pass it down:
+- [x] **Step 1: `app/page.tsx` (server)** — compute the aggregate and pass it down:
 ```tsx
 import { listLeaderboard, getWriterStats } from "@/lib/leaderboard";
 // ...
@@ -152,7 +152,7 @@ const writerStats = getWriterStats();
 <main><HomeTabs leaderboard={leaderboard} writerStats={writerStats} /></main>
 ```
 
-- [ ] **Step 2: `HomeTabs.tsx`** — accept and forward the props:
+- [x] **Step 2: `HomeTabs.tsx`** — accept and forward the props:
 ```tsx
 import type { LeaderboardRow, WriterStats } from "@/lib/leaderboard";
 export function HomeTabs({ leaderboard, writerStats }: { leaderboard: LeaderboardRow[]; writerStats: WriterStats }) {
@@ -162,17 +162,17 @@ export function HomeTabs({ leaderboard, writerStats }: { leaderboard: Leaderboar
 ```
 (Readers/Agents panels unchanged.)
 
-- [ ] **Step 3: `WritersPanel.tsx`** — accept props; replace the two hardcoded stat cards' values with `writerStats`; pass `leaderboard` to `TopEarningAuthors`:
+- [x] **Step 3: `WritersPanel.tsx`** — accept props; replace the two hardcoded stat cards' values with `writerStats`; pass `leaderboard` to `TopEarningAuthors`:
 - `Total Articles Purchased` value → `writerStats.totalPurchased.toLocaleString()` (delta line can stay or be removed/simplified).
 - `Total Earned by Authors` value → `writerStats.totalEarned`.
 - `<TopEarningAuthors rows={leaderboard} />`.
 
-- [ ] **Step 4: `TopEarningAuthors.tsx`** — accept `rows: LeaderboardRow[]` prop instead of the hardcoded `ROWS`. Render `rows.map(...)` with the existing `.lboard-row`/`.lb-pub` markup. Update the header count label `<span className="more">` from "1 author" to `{rows.length} author{rows.length === 1 ? "" : "s"}`. Keep the column headers + foot copy. If `rows` is empty, render the empty board (headers + foot) gracefully.
+- [x] **Step 4: `TopEarningAuthors.tsx`** — accept `rows: LeaderboardRow[]` prop instead of the hardcoded `ROWS`. Render `rows.map(...)` with the existing `.lboard-row`/`.lb-pub` markup. Update the header count label `<span className="more">` from "1 author" to `{rows.length} author{rows.length === 1 ? "" : "s"}`. Keep the column headers + foot copy. If `rows` is empty, render the empty board (headers + foot) gracefully.
   - Update `components/home/TopEarningAuthors.test.tsx` accordingly: it now takes a `rows` prop — pass a small fixture array and assert the rows render (e.g. `render(<TopEarningAuthors rows={[{rank:"01",name:"Alex Fan",desc:"LXDAO",articles:"1",earned:"$0.00"}]} />)` → expect "Alex Fan" + "$0.00").
 
-- [ ] **Step 5: Verify** — `pnpm test` (update the TopEarningAuthors test) + `pnpm build` green. `pnpm dev`; `curl -s http://localhost:3000` then switch to For Writers in the browser → confirm the leaderboard shows the seed author (Alex Fan) with their real earned (likely `$0.00` until a payment, or the paid amount if Phase 4 was exercised). Confirm the two stats cards show real totals (e.g. `0` / `$0.00` on a fresh log, or the real numbers after payments).
+- [x] **Step 5: Verify** — `pnpm test` (update the TopEarningAuthors test) + `pnpm build` green. `pnpm dev`; `curl -s http://localhost:3000` then switch to For Writers in the browser → confirm the leaderboard shows the seed author (Alex Fan) with their real earned (likely `$0.00` until a payment, or the paid amount if Phase 4 was exercised). Confirm the two stats cards show real totals (e.g. `0` / `$0.00` on a fresh log, or the real numbers after payments).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add app/page.tsx components/home/HomeTabs.tsx components/home/WritersPanel.tsx components/home/TopEarningAuthors.tsx components/home/TopEarningAuthors.test.tsx
 git commit -m "feat: For Writers leaderboard + stats from real payment data (Phase 5 T2)"
@@ -182,9 +182,9 @@ git commit -m "feat: For Writers leaderboard + stats from real payment data (Pha
 
 ### Task 3: verification
 
-- [ ] `pnpm test && pnpm build` green.
-- [ ] **Demo loop (after a Phase-4 paid unlock):** with at least one row in `data/payment-log.json`, refresh the home page → For Writers → the demo author's EARNED reflects the sum (e.g. one $0.30 unlock → `$0.30`; a human + an agent unlock → `$0.60`). The two stats cards show the real purchase count + total. This closes §3.1 item 5 ("收益可见").
-- [ ] Note: `app/page.tsx` is now dynamic (reads the log per request). Confirm it's `ƒ` (dynamic) in the build output, or add `export const dynamic = "force-dynamic"` / `revalidate = 0` so the leaderboard isn't statically cached.
+- [x] `pnpm test && pnpm build` green.
+- [x] **Demo loop (after a Phase-4 paid unlock):** with at least one row in `data/payment-log.json`, refresh the home page → For Writers → the demo author's EARNED reflects the sum (e.g. one $0.30 unlock → `$0.30`; a human + an agent unlock → `$0.60`). The two stats cards show the real purchase count + total. This closes §3.1 item 5 ("收益可见").
+- [x] Note: `app/page.tsx` is now dynamic (reads the log per request). Confirm it's `ƒ` (dynamic) in the build output, or add `export const dynamic = "force-dynamic"` / `revalidate = 0` so the leaderboard isn't statically cached.
 
 ---
 
