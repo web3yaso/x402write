@@ -1,4 +1,5 @@
 import { DPrompt } from "@/components/shared/DPrompt";
+import { AgentUnlockGate } from "@/components/reports/AgentUnlockGate";
 import type { CompanionPublic } from "@/lib/companions";
 
 interface Props {
@@ -74,36 +75,32 @@ ${companion.agentManual}`;
           <div className="ag-h2">
             <span className="hash">##</span>付费读取
           </div>
-          <div className="ag-pw">
-            <span className="lock">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              付费阅读 · 已读 24%
-            </span>
-            <p className="h">
-              解锁后读取全文 + 全部 prompt：7 步应对清单、条款拆解、风险边界全覆盖。
-            </p>
-            <p className="meta">真人与 Agent 同价 · 付费即拿结构化结论</p>
-            <div className="prow">
-              <span className="price">{priceUsd}</span>
-              <span className="pnote">USDC on Base · 一次付费永久可读</span>
-            </div>
-            <button className="cta" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-              </svg>
-              x402 自动付费 {priceUsd} 读取
-            </button>
-            <p className="fine">
-              付费后 <strong>{priceUsd}（100%）</strong>直达 {authorName} 钱包 · 平台 0 抽成
-            </p>
-            <p className="fine" style={{ marginTop: "6px" }}>
-              全文解锁将在 x402 付费上线（Phase 4）
-            </p>
-          </div>
+          <AgentUnlockGate
+            slug={slug}
+            priceUsd={priceUsd}
+            preview={
+              <div className="ag-pw">
+                <span className="lock">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  付费阅读 · 已读 24%
+                </span>
+                <p className="h">
+                  解锁后读取全文 + 全部 prompt：7 步应对清单、条款拆解、风险边界全覆盖。
+                </p>
+                <p className="meta">真人与 Agent 同价 · 付费即拿结构化结论</p>
+                <div className="prow">
+                  <span className="price">{priceUsd}</span>
+                  <span className="pnote">USDC on Base · 一次付费永久可读</span>
+                </div>
+                <p className="fine">
+                  付费后 <strong>{priceUsd}（100%）</strong>直达 {authorName} 钱包 · 平台 0 抽成
+                </p>
+              </div>
+            }
+          />
         </section>
 
         {/* ## Prompts */}

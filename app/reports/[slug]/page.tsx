@@ -4,6 +4,7 @@ import { previewSlice } from "@/lib/preview";
 import { getCompanionPublic } from "@/lib/companions";
 import { ArticleBody } from "@/components/reports/ArticleBody";
 import { Paywall } from "@/components/reports/Paywall";
+import { HumanUnlockGate } from "@/components/reports/HumanUnlockGate";
 import { AgentMode } from "@/components/reports/AgentMode";
 import { ArticleModeToggle } from "@/components/reports/ArticleModeToggle";
 
@@ -37,8 +38,16 @@ export default async function ReportDetail({ params }: { params: Promise<{ slug:
               <div className="hm-au-role">{[report.meta.authorOrg, ...report.meta.tags].filter(Boolean).join(" · ")}</div>
             </div>
           </div>
-          <ArticleBody markdown={preview} />
-          <Paywall priceUsd={report.priceUsd} authorName={report.meta.authorName} />
+          <HumanUnlockGate
+            slug={slug}
+            priceUsd={report.priceUsd}
+            preview={
+              <>
+                <ArticleBody markdown={preview} />
+                <Paywall priceUsd={report.priceUsd} authorName={report.meta.authorName} />
+              </>
+            }
+          />
         </article>
       </div>
     </>

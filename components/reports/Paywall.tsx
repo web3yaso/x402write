@@ -21,18 +21,8 @@ export function Paywall({ priceUsd, authorName }: Props) {
           <span className="pw-price">{priceUsd}</span>
           <span className="pw-price-note">USDC on Base · 一次付费永久可读</span>
         </div>
-        <button className="pw-cta" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          用钱包付 {priceUsd} 解锁全文
-        </button>
         <p className="pw-fine">
           付费后 100% 直达 {authorName} 钱包 · 平台 0 抽成 · 钱包不变可永久重读
-        </p>
-        <p style={{ fontSize: "12px", color: "var(--ink-3)", textAlign: "center", marginTop: "10px" }}>
-          全文解锁将在 x402 付费上线（Phase 4）
         </p>
       </div>
     </>
