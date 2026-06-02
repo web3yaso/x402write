@@ -26,8 +26,10 @@ describe("reports loader", () => {
 });
 
 describe("published reports join", () => {
-  it("lists the published seed report with a formatted price", () => {
-    const seed = listPublishedReports().find((r) => r.meta.slug === "onchain-partnership-rwa");
+  it("lists a published seed report with a formatted price", () => {
+    // The DAO article (onchain-partnership-rwa) is the unpublished /publish import
+    // example; the always-published seed is yaoqian-crypto-liability ($0.30).
+    const seed = listPublishedReports().find((r) => r.meta.slug === "yaoqian-crypto-liability");
     expect(seed).toBeTruthy();
     expect(seed!.priceUsd).toBe("$0.30");
   });
