@@ -4,10 +4,13 @@ import userEvent from "@testing-library/user-event";
 import { AgentsPanel } from "./AgentsPanel";
 
 describe("AgentsPanel", () => {
-  it("renders the coming-soon banner and two copy prompts", () => {
+  it("renders the coming-soon banner, the real paid endpoint, and copy prompts", () => {
     render(<AgentsPanel />);
     expect(screen.getByText(/Agent 接入将于下一阶段开放/)).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /copy/i })).toHaveLength(2);
+    // The real, working paid-read endpoint (not the old fictional surface).
+    expect(screen.getByText("/api/v1/articles/{slug}")).toBeInTheDocument();
+    // Two setup prompts + the 200-response shape, each copyable.
+    expect(screen.getAllByRole("button", { name: /copy/i })).toHaveLength(3);
   });
 
   it("toggles the active provider pill", async () => {
