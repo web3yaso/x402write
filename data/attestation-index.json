@@ -18,5 +18,15 @@
     "publishedAt": 1770336000,
     "version": 1,
     "disclaimerHash": "0x7c034b1cd844c62a4c1da265d62c911b9de023b68b3207b28e6139f261489fb5"
+  },
+  {
+    "slug": "onchain-partnership-rwa",
+    "attestationUID": "0x5417067d6019c332d9d9d674ab4def1c25b152791d0e7bcddc2aa7d0979b1a66",
+    "txHash": "0xe6a0869cbd08c9e6c68308fd95efe6c0a136b7aba1bf6b230fa023cb575e29f0",
+    "author": "0x8dF5f05aB4E88d70ED0F0714b7210c5840F38e1D",
+    "priceUSDC": "300000",
+    "publishedAt": 1770595200,
+    "version": 1,
+    "disclaimerHash": "0x7c034b1cd844c62a4c1da265d62c911b9de023b68b3207b28e6139f261489fb5"
   }
 ]
