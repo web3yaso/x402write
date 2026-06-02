@@ -5,3 +5,18 @@ export function truncateAddress(address: string): string {
   }
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
+
+/**
+ * True only when `url` points at a real external article (has a path beyond "/").
+ * A bare-domain placeholder like `https://mp.weixin.qq.com/` — used as a stand-in
+ * on original pieces with no canonical repost — returns false, so "查看原文" stays hidden.
+ */
+export function isExternalSourceUrl(url?: string): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    return u.pathname.replace(/\/+$/, "") !== "";
+  } catch {
+    return false;
+  }
+}

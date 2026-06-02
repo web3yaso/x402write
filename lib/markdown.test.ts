@@ -35,4 +35,44 @@ describe("normalizeMarkdown", () => {
     expect(clean).toBe("真正的正文。");
     expect(clean).not.toMatch(/微信扫一扫|关注该公众号|分享 留言 收藏 听过/);
   });
+
+  it("strips WeChat byline, timestamp and reader-widget cruft", () => {
+    const dirty = [
+      "原创  Lawson Riskman  Lawson Riskman  [ Web3风险官 ](javascript:void\\(0\\);)",
+      "",
+      "_2026年02月06日 13:47_ __ _ _ _ _",
+      "",
+      "在小说阅读器读本章",
+      "",
+      "去阅读",
+      "",
+      "在 Web3 行业，有一套被反复使用的用工操作：",
+    ].join("\n");
+    expect(normalizeMarkdown(dirty)).toBe("在 Web3 行业，有一套被反复使用的用工操作：");
+  });
+
+  it("drops a leading H1 that duplicates the provided title (quote/space tolerant)", () => {
+    const md = '#  你以为在“降本增效”，法院认为你在违法用工\n\n正文从这里开始。';
+    expect(normalizeMarkdown(md, { title: '你以为在"降本增效"，法院认为你在违法用工' })).toBe(
+      "正文从这里开始。",
+    );
+  });
+
+  it("keeps a leading H1 when no title is provided, or when it does not match", () => {
+    expect(normalizeMarkdown("# 标题")).toBe("# 标题");
+    expect(normalizeMarkdown("# 真实小节\n\n正文", { title: "完全不同的文章标题" })).toBe(
+      "# 真实小节\n\n正文",
+    );
+  });
+
+  it("matches the title H1 through empty-bold noise and full/half-width punctuation", () => {
+    // WeChat injects empty "** **" between glyphs and the body H1 uses a full-width
+    // colon while the frontmatter title uses a half-width one.
+    const md = "# 重****构链上契约：从 DAO 到 RWA\n\n正文。";
+    expect(normalizeMarkdown(md, { title: "重构链上契约:从 DAO 到 RWA" })).toBe("正文。");
+  });
+
+  it("strips a timestamp line that carries an IP-location footer", () => {
+    expect(normalizeMarkdown("_2026年02月09日 17:36_ __ 广东  _\n\n正文。")).toBe("正文。");
+  });
 });

@@ -1482,8 +1482,10 @@ main {
 .article .hm-title .cjk { font-family: var(--serif-cjk); font-weight: 900; letter-spacing: 0.01em; }
 .article .hm-deck {
   font-family: var(--serif); font-weight: 400;
-  font-size: clamp(21px, 2.6vw, 28px); line-height: 1.4;
-  color: var(--ink-2); margin: 0 0 36px; max-width: 24ch;
+  font-size: clamp(21px, 2.6vw, 28px); line-height: 1.45;
+  /* CJK-aware: `ch` keys off the "0" glyph (~half a Han char), so 24ch wrapped the
+     summary to ~12 chars/line. `em` ≈ one Han char → a readable ~22-char deck. */
+  color: var(--ink-2); margin: 0 0 36px; max-width: 22em;
 }
 .article .hm-byline { display: flex; align-items: center; gap: 14px; margin: 0 0 8px; }
 .article .hm-av {

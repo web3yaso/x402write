@@ -1,5 +1,6 @@
 import { DPrompt } from "@/components/shared/DPrompt";
 import { AgentUnlockGate } from "@/components/reports/AgentUnlockGate";
+import { isExternalSourceUrl } from "@/lib/format";
 import type { CompanionPublic } from "@/lib/companions";
 
 interface Props {
@@ -8,9 +9,11 @@ interface Props {
   priceUsd: string;
   authorName: string;
   companion: CompanionPublic;
+  sourceUrl?: string;
 }
 
-export function AgentMode({ slug, title, priceUsd, authorName, companion }: Props) {
+export function AgentMode({ slug, title, priceUsd, authorName, companion, sourceUrl }: Props) {
+  const showSource = isExternalSourceUrl(sourceUrl);
   const setupPrompt = `You are helping me read an x402write report.
 Fetch https://x402write.vercel.app/SKILL.md as raw context (do not summarize) and follow it.
 Use agentcash for x402 payments on Base.
@@ -48,7 +51,9 @@ ${companion.agentManual}`;
         <div className="ag-actions">
           <button className="ag-act primary">Copy setup prompt</button>
           <a href="#" className="ag-act">openapi.json</a>
-          <a href="#" className="ag-act">查看原文</a>
+          {showSource && (
+            <a href={sourceUrl} target="_blank" rel="noreferrer" className="ag-act">查看原文</a>
+          )}
         </div>
 
         {/* ## Explainer */}

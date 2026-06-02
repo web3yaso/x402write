@@ -11,7 +11,7 @@ export function FullArticle({ full }: { full: ArticlePaid }) {
         ✓ 已解锁 · {full.citation.author} · 全文已展开
       </div>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>
-        {normalizeMarkdown(full.content)}
+        {normalizeMarkdown(full.content, { title: full.title })}
       </ReactMarkdown>
     </div>
   );

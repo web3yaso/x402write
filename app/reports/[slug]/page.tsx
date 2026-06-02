@@ -43,7 +43,7 @@ export default async function ReportDetail({ params }: { params: Promise<{ slug:
             priceUsd={report.priceUsd}
             preview={
               <>
-                <ArticleBody markdown={preview} />
+                <ArticleBody markdown={preview} title={report.meta.title} />
                 <Paywall priceUsd={report.priceUsd} authorName={report.meta.authorName} />
               </>
             }
@@ -60,6 +60,7 @@ export default async function ReportDetail({ params }: { params: Promise<{ slug:
       priceUsd={report.priceUsd}
       authorName={report.meta.authorName}
       companion={companion}
+      sourceUrl={report.meta.sourceUrl}
     />
   );
 
