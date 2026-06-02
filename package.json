@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run"
+    "test": "vitest run",
+    "register-schema": "tsx scripts/eas-register-schema.ts",
+    "seed": "tsx scripts/seed-attest.ts",
+    "reset-demo": "tsx scripts/reset-demo.ts"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",
