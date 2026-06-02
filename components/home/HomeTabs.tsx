@@ -5,6 +5,7 @@ import { ReadersPanel } from "./ReadersPanel";
 import { WritersPanel } from "./WritersPanel";
 import { AgentsPanel } from "./AgentsPanel";
 import type { PublishedReport } from "@/lib/reports";
+import type { LeaderboardRow, WriterStats } from "@/lib/leaderboard";
 
 type Tab = "readers" | "writers" | "agents";
 
@@ -14,7 +15,11 @@ const TABS: { key: Tab; label: React.ReactNode }[] = [
   { key: "agents", label: <>For Agents <span className="soon">SOON</span></> },
 ];
 
-export function HomeTabs({ readerArticles }: { readerArticles: PublishedReport[] }) {
+export function HomeTabs({ readerArticles, leaderboard, writerStats }: {
+  readerArticles: PublishedReport[];
+  leaderboard: LeaderboardRow[];
+  writerStats: WriterStats;
+}) {
   const [tab, setTab] = useState<Tab>("readers");
 
   function select(t: Tab) {
@@ -41,7 +46,7 @@ export function HomeTabs({ readerArticles }: { readerArticles: PublishedReport[]
       </div>
 
       {tab === "readers" && <ReadersPanel articles={readerArticles} />}
-      {tab === "writers" && <WritersPanel />}
+      {tab === "writers" && <WritersPanel leaderboard={leaderboard} writerStats={writerStats} />}
       {tab === "agents" && <AgentsPanel />}
     </>
   );

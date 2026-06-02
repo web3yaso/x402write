@@ -1,10 +1,6 @@
-type Row = { rank: string; name: string; desc: string; articles: string; earned: string };
+import type { LeaderboardRow } from "@/lib/leaderboard";
 
-const ROWS: Row[] = [
-  { rank: "01", name: "Alex Fan", desc: "@lxdao · 公众号 · 链上治理 / RWA", articles: "1", earned: "$0.00" },
-];
-
-export function TopEarningAuthors() {
+export function TopEarningAuthors({ rows }: { rows: LeaderboardRow[] }) {
   return (
     <>
       <div className="lboard-head">
@@ -12,7 +8,7 @@ export function TopEarningAuthors() {
           <h3>Top Earning Authors</h3>
           <p className="lboard-sub">Ranked by total earnings across paid unlocks · paid directly to wallets via x402.</p>
         </div>
-        <span className="more">1 author</span>
+        <span className="more">{rows.length} author{rows.length === 1 ? "" : "s"}</span>
       </div>
 
       <div className="lboard">
@@ -22,7 +18,7 @@ export function TopEarningAuthors() {
           <span className="r-r c-art">ARTICLES</span>
           <span className="r-r">EARNED</span>
         </div>
-        {ROWS.map((r) => (
+        {rows.map((r) => (
           <div className="lboard-row" key={r.rank}>
             <span className="rank">{r.rank}</span>
             <div className="lb-pub"><div className="name">{r.name}</div><div className="desc">{r.desc}</div></div>

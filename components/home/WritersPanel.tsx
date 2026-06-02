@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TopEarningAuthors } from "./TopEarningAuthors";
+import type { LeaderboardRow, WriterStats } from "@/lib/leaderboard";
 
-export function WritersPanel() {
+export function WritersPanel({ leaderboard, writerStats }: { leaderboard: LeaderboardRow[]; writerStats: WriterStats }) {
   const router = useRouter();
   const [src, setSrc] = useState("");
   const importGo = () => router.push("/publish?source=" + encodeURIComponent(src));
@@ -29,17 +30,17 @@ export function WritersPanel() {
       <div className="stats">
         <div className="stat">
           <div className="lbl">Total Articles Purchased</div>
-          <div className="val">12,847</div>
-          <div className="delta">+612 past 7d</div>
+          <div className="val">{writerStats.totalPurchased.toLocaleString()}</div>
+          <div className="delta">{writerStats.authorCount} author{writerStats.authorCount === 1 ? "" : "s"}</div>
         </div>
         <div className="stat">
           <div className="lbl">Total Earned by Authors</div>
-          <div className="val acc">$48,302.51</div>
-          <div className="delta">+$2,841 past 7d · 0% platform fee</div>
+          <div className="val acc">{writerStats.totalEarned}</div>
+          <div className="delta">0% platform fee</div>
         </div>
       </div>
 
-      <TopEarningAuthors />
+      <TopEarningAuthors rows={leaderboard} />
     </section>
   );
 }
