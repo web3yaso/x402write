@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getReportMeta, getReportBody, listReportSlugs, listPublishedReports, getPublishedReport } from "./reports";
+import { getReportMeta, getReportBody, listReportSlugs, listPublishedReports, getPublishedReport, listReaderCatalog } from "./reports";
 
 describe("reports loader", () => {
   it("reads frontmatter meta for the seed", () => {
@@ -35,5 +35,20 @@ describe("published reports join", () => {
   });
   it("returns null for an unpublished slug", () => {
     expect(getPublishedReport("does-not-exist")).toBeNull();
+  });
+});
+
+describe("reader catalog (home 收录文章)", () => {
+  it("includes every published report — no hardcoded slug exclusion", () => {
+    // Regression: the DAO import-example must appear here once it is published
+    // (it was previously dropped by a hardcoded filter in app/page.tsx).
+    const catalog = listReaderCatalog().map((r) => r.meta.slug).sort();
+    const published = listPublishedReports().map((r) => r.meta.slug).sort();
+    expect(catalog).toEqual(published);
+  });
+
+  it("is sorted newest-first by publishedAt", () => {
+    const dates = listReaderCatalog().map((r) => r.meta.publishedAt);
+    expect(dates).toEqual([...dates].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
   });
 });

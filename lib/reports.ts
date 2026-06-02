@@ -64,6 +64,15 @@ export function listPublishedReports(): PublishedReport[] {
     .map((r) => ({ meta: getReportMeta(r.slug), record: r, priceUsd: formatUsdc(r.priceUSDC) }));
 }
 
+/** The home "收录文章" catalog: every published report, newest first. No hardcoded
+ *  exclusions — a freshly published article (e.g. the /publish import example) appears
+ *  here as soon as it lands in the index, matching the /reports page. */
+export function listReaderCatalog(): PublishedReport[] {
+  return listPublishedReports().sort((a, b) =>
+    a.meta.publishedAt < b.meta.publishedAt ? 1 : a.meta.publishedAt > b.meta.publishedAt ? -1 : 0,
+  );
+}
+
 /** A single published report, or null if the slug is not published (not in the index). */
 export function getPublishedReport(slug: string): PublishedReport | null {
   const rec = readIndex().find((r) => r.slug === slug);
