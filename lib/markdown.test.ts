@@ -23,4 +23,16 @@ describe("normalizeMarkdown", () => {
     expect(normalizeMarkdown("# 标题")).toBe("# 标题");
     expect(normalizeMarkdown("普通段落,没有强调。")).toBe("普通段落,没有强调。");
   });
+
+  it("strips broken/hotlinked images", () => {
+    expect(normalizeMarkdown("![cover](https://mmbiz.qpic.cn/x.jpg)\n\n正文在此")).toBe("正文在此");
+    expect(normalizeMarkdown("行内 ![](http://x/y.png) 图")).not.toContain("![");
+  });
+
+  it("strips WeChat platform boilerplate", () => {
+    const dirty = "真正的正文。\n\n微信扫一扫\n关注该公众号\n\n使用小程序\n****\n× 分析\n：  ，  ，  。\n分享 留言 收藏 听过";
+    const clean = normalizeMarkdown(dirty);
+    expect(clean).toBe("真正的正文。");
+    expect(clean).not.toMatch(/微信扫一扫|关注该公众号|分享 留言 收藏 听过/);
+  });
 });
