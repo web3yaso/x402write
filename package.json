@@ -9,8 +9,14 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@coinbase/x402": "^2.1.0",
     "@ethereum-attestation-service/eas-sdk": "^2.9.1",
     "@tanstack/react-query": "^5.100.14",
+    "@x402/core": "^2.14.0",
+    "@x402/evm": "^2.14.0",
+    "@x402/fetch": "^2.14.0",
+    "@x402/next": "^2.14.0",
+    "@x402/paywall": "^2.14.0",
     "ethers": "^6.16.0",
     "gray-matter": "^4.0.3",
     "next": "16.2.6",

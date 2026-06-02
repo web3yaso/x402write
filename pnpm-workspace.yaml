@@ -1,4 +1,5 @@
 allowBuilds:
+  '@coinbase/x402': true
   bufferutil: true
   esbuild: true
   keccak: true
