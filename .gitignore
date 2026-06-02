@@ -36,6 +36,7 @@ yarn-error.log*
 
 # content plaintext source — NEVER commit paid article bodies (repo is public; see HACKATHON.md §8.7)
 /content/reports/_plaintext/
+/content/companions/_plaintext/
 
 # vercel
 .vercel
