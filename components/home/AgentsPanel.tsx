@@ -29,7 +29,7 @@ export function AgentsPanel() {
 
       <div className="say-lbl">Things you can say</div>
       <div className="say-box">
-        <span className="car">&gt;</span>我朋友在杭州 OTC 出金被工行冻结,金额 12 万,人在大陆,下一步该做什么?<span className="cursor"></span>
+        <span className="car">&gt;</span>为 web3 公司工作,有什么风险?<span className="cursor"></span>
       </div>
 
       <div className="a-rule"></div>
