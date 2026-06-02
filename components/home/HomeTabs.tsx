@@ -12,7 +12,7 @@ type Tab = "readers" | "writers" | "agents";
 const TABS: { key: Tab; label: React.ReactNode }[] = [
   { key: "readers", label: "Try it" },
   { key: "writers", label: "For Writers" },
-  { key: "agents", label: <>For Agents <span className="soon">SOON</span></> },
+  { key: "agents", label: "For Agents" },
 ];
 
 export function HomeTabs({ readerArticles, leaderboard, writerStats }: {
