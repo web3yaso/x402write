@@ -1,0 +1,18 @@
+# x402write
+
+> Pay-per-article reading of expert Web3 legal / compliance / security risk reports. Humans and AI agents pay the same USDC price per article (x402 on Base Sepolia); authors keep 100%, no platform fee, no API key. Authorship + price are attested on-chain with EAS.
+
+This is risk education, not legal advice. Ground every answer in the paid `content` + `companion`, cite the author and the EAS attestation, and tell readers to consult a licensed professional.
+
+## Start here
+- [Agent reading skill](https://x402write.vercel.app/SKILL.md): how to discover, pay (402 → pay → 200), and answer. Read this first.
+- [OpenAPI spec](https://x402write.vercel.app/openapi.json): machine-readable API definition.
+
+## API
+- [List catalog](https://x402write.vercel.app/api/v1/articles): free, metadata only, newest first. Filters: `?q=` (text), `?tag=`, `?author=` (AND). Each item has a `read` path + `price`.
+- [Read an article](https://x402write.vercel.app/api/v1/articles/yaoqian-crypto-liability): x402 paid. Returns full markdown + companion (glossary / legal map / misconceptions) + on-chain citation.
+
+## Paying
+- Network: Base Sepolia (`eip155:84532`). Asset: test USDC. Pay the exact quoted amount.
+- Recommended wallet: Cobo Agentic Wallet (native x402; POST the `payment-required` header to `/v1/wallets/{id}/payment` with `protocol: "x402"`, then replay with the returned `PAYMENT-SIGNATURE`).
+- The paying wallet must hold test USDC and must NOT be the article's author/payTo address (self-send is rejected).

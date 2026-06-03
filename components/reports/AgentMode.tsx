@@ -50,7 +50,7 @@ ${companion.agentManual}`;
 
         <div className="ag-actions">
           <button className="ag-act primary">Copy setup prompt</button>
-          <a href="#" className="ag-act">openapi.json</a>
+          <a href="/openapi.json" target="_blank" rel="noreferrer" className="ag-act">openapi.json</a>
           {showSource && (
             <a href={sourceUrl} target="_blank" rel="noreferrer" className="ag-act">查看原文</a>
           )}

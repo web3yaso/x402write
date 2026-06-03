@@ -1,0 +1,112 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "x402write API",
+    "version": "1.0.0",
+    "description": "Discover and read expert Web3 legal / compliance / security risk reports. Listing is free; full text is behind an x402 paywall (USDC on Base Sepolia). See /SKILL.md for the agent reading flow.",
+    "license": { "name": "Authors keep 100% — 0% platform fee" }
+  },
+  "servers": [{ "url": "https://x402write.vercel.app", "description": "Base Sepolia testnet deployment" }],
+  "paths": {
+    "/api/v1/articles": {
+      "get": {
+        "operationId": "listArticles",
+        "summary": "List the catalog (free, metadata only)",
+        "description": "Returns published reports newest-first, metadata only (no body). Combine the optional filters with AND.",
+        "parameters": [
+          { "name": "q", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Free-text over title / summary / author / org / tags." },
+          { "name": "tag", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Substring match on any tag." },
+          { "name": "author", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Substring match on author name or org." }
+        ],
+        "responses": {
+          "200": {
+            "description": "Catalog page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["count", "articles"],
+                  "properties": {
+                    "count": { "type": "integer" },
+                    "articles": { "type": "array", "items": { "$ref": "#/components/schemas/CatalogItem" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{slug}": {
+      "get": {
+        "operationId": "readArticle",
+        "summary": "Read a report (x402 paid)",
+        "description": "First call returns 402 with payment requirements in the `payment-required` header (Base64 JSON: scheme exact, network eip155:84532, USDC asset, payTo, amount). Pay with an agent wallet (e.g. Cobo Agentic Wallet, protocol x402) and retry to get 200. The paying wallet must hold test USDC and must NOT be the article's author/payTo (self-send is rejected).",
+        "parameters": [
+          { "name": "slug", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[a-z0-9-]{1,80}$" }, "example": "yaoqian-crypto-liability" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paid: full report + companion + on-chain citation",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ArticlePaid" } } }
+          },
+          "402": {
+            "description": "Payment Required — pay the quoted USDC amount and retry.",
+            "headers": {
+              "payment-required": {
+                "description": "Base64-encoded JSON payment requirements (the x402 `accepts` block). Hand this to your wallet's x402 payment call.",
+                "schema": { "type": "string" }
+              }
+            },
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "404": {
+            "description": "Unknown or unpublished slug.",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "error": { "type": "string" } } } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CatalogItem": {
+        "type": "object",
+        "required": ["slug", "title", "summary", "author", "tags", "price", "priceUSDC", "publishedAt", "attestationUID", "read"],
+        "properties": {
+          "slug": { "type": "string" },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "author": { "type": "string" },
+          "authorOrg": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "price": { "type": "string", "example": "$0.30" },
+          "priceUSDC": { "type": "string", "description": "Amount in USDC base units (6 decimals).", "example": "300000" },
+          "publishedAt": { "type": "string" },
+          "attestationUID": { "type": "string", "description": "EAS attestation UID.", "example": "0x…" },
+          "read": { "type": "string", "description": "Path to fetch this article (prepend the origin and GET it).", "example": "/api/v1/articles/yaoqian-crypto-liability" }
+        }
+      },
+      "ArticlePaid": {
+        "type": "object",
+        "required": ["slug", "title", "content", "companion", "citation"],
+        "properties": {
+          "slug": { "type": "string" },
+          "title": { "type": "string" },
+          "content": { "type": "string", "description": "Full article markdown." },
+          "companion": { "type": "string", "description": "Glossary / legal map / misconceptions (paid-only)." },
+          "citation": { "$ref": "#/components/schemas/Citation" }
+        }
+      },
+      "Citation": {
+        "type": "object",
+        "required": ["author", "attestationUID", "publishedAt"],
+        "properties": {
+          "author": { "type": "string" },
+          "attestationUID": { "type": "string" },
+          "publishedAt": { "type": "string" }
+        }
+      }
+    }
+  }
+}

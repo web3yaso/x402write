@@ -4,16 +4,14 @@ export function Footer() {
       <div className="foot-inner">
         <div className="foot-l">
           <a href="/">home</a>
-          <a href="#">about</a>
-          <a href="#">contact</a>
-          <a href="#">openapi</a>
-          <a href="#">skill</a>
-          <a href="#">llms</a>
+          <a href="/reports">reports</a>
+          <a href="/openapi.json" target="_blank" rel="noreferrer">openapi</a>
+          <a href="/SKILL.md" target="_blank" rel="noreferrer">skill</a>
+          <a href="/llms.txt" target="_blank" rel="noreferrer">llms</a>
         </div>
         <div className="foot-mark" aria-hidden="true"></div>
         <div className="foot-r">
-          <a href="#">mppscan</a>
-          <a href="#">x402scan</a>
+          <a href="https://x402scan.com" target="_blank" rel="noreferrer">x402scan</a>
         </div>
       </div>
     </footer>

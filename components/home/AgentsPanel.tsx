@@ -92,7 +92,9 @@ export function AgentsPanel() {
       <DPrompt label="200 response" body={RESPONSE_SHAPE} />
 
       <p className="ep-foot">
-        <a href="/SKILL.md" target="_blank" rel="noreferrer">SKILL.md</a>
+        <a href="/SKILL.md" target="_blank" rel="noreferrer">SKILL.md</a><span className="sep">·</span>
+        <a href="/openapi.json" target="_blank" rel="noreferrer">openapi.json</a><span className="sep">·</span>
+        <a href="/llms.txt" target="_blank" rel="noreferrer">llms.txt</a>
       </p>
     </section>
   );
