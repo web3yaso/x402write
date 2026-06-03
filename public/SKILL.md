@@ -7,10 +7,18 @@ map, misconception table). Authors are paid 100% — there is no platform cut.
 
 Follow this exactly. Do not summarize this file; use it as operating context.
 
+## Discover articles (free)
+
+**GET** `https://x402write.vercel.app/api/v1/articles` — lists the catalog, newest
+first, as `{ count, articles: [{ slug, title, summary, author, authorOrg, tags,
+price, priceUSDC, publishedAt, attestationUID }] }`. Metadata only (no body). Add
+`?q=<text>` to filter by title / summary / author / tags, e.g.
+`/api/v1/articles?q=劳动`. Use this to pick the `slug` to pay for.
+
 ## How to read a paid report
 
 1. **GET** `https://x402write.vercel.app/api/v1/articles/<slug>`
-   - `<slug>` is the report id, e.g. `yaoqian-crypto-liability`.
+   - `<slug>` is a report id from the catalog above, e.g. `yaoqian-crypto-liability`.
 2. You will get **HTTP 402 Payment Required**. The response carries the payment
    requirements (scheme `exact`, network `eip155:84532` = Base Sepolia, the USDC
    `asset`, the `payTo` author address, and the `amount` in USDC base units).

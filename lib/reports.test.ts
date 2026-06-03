@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getReportMeta, getReportBody, listReportSlugs, listPublishedReports, getPublishedReport, listReaderCatalog } from "./reports";
+import { getReportMeta, getReportBody, listReportSlugs, listPublishedReports, getPublishedReport, listReaderCatalog, listAgentCatalog, toCatalogItem, catalogMatches } from "./reports";
 
 describe("reports loader", () => {
   it("reads frontmatter meta for the seed", () => {
@@ -50,5 +50,32 @@ describe("reader catalog (home 收录文章)", () => {
   it("is sorted newest-first by publishedAt", () => {
     const dates = listReaderCatalog().map((r) => r.meta.publishedAt);
     expect(dates).toEqual([...dates].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
+  });
+});
+
+describe("agent catalog (GET /api/v1/articles)", () => {
+  it("projects a published report to metadata-only catalog items (no body)", () => {
+    const items = listAgentCatalog();
+    const yq = items.find((i) => i.slug === "yaoqian-crypto-liability");
+    expect(yq).toBeTruthy();
+    expect(yq!.title).toContain("姚前");
+    expect(yq!.price).toMatch(/^\$\d/);
+    expect(yq!.priceUSDC).toMatch(/^\d+$/);
+    expect(yq!.attestationUID).toMatch(/^0x/);
+    expect(Array.isArray(yq!.tags)).toBe(true);
+    expect(yq as Record<string, unknown>).not.toHaveProperty("content");
+  });
+
+  it("filters by a free-text query over title/summary/author/tags", () => {
+    expect(listAgentCatalog("劳动").some((i) => i.slug === "web3-illegal-employment")).toBe(true);
+    expect(listAgentCatalog("zzz-no-such-term-xyz")).toHaveLength(0);
+    // empty/whitespace query returns the full catalog
+    expect(listAgentCatalog("   ").length).toBe(listAgentCatalog().length);
+  });
+
+  it("catalogMatches is case-insensitive and covers org + tags", () => {
+    const item = toCatalogItem(listReaderCatalog()[0]);
+    expect(catalogMatches(item, item.author.toUpperCase())).toBe(true);
+    expect(catalogMatches(item, "definitely-not-present")).toBe(false);
   });
 });

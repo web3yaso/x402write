@@ -73,6 +73,54 @@ export function listReaderCatalog(): PublishedReport[] {
   );
 }
 
+/** Public, agent-facing catalog item — metadata only, never the article body. */
+export type CatalogItem = {
+  slug: string;
+  title: string;
+  summary: string;
+  author: string;
+  authorOrg?: string;
+  tags: string[];
+  price: string;        // "$0.30"
+  priceUSDC: string;    // "300000" (base units)
+  publishedAt: string;
+  attestationUID: string;
+};
+
+/** Project a published report to the public catalog shape (no `content`). */
+export function toCatalogItem(r: PublishedReport): CatalogItem {
+  return {
+    slug: r.meta.slug,
+    title: r.meta.title,
+    summary: r.meta.summary,
+    author: r.meta.authorName,
+    authorOrg: r.meta.authorOrg,
+    tags: r.meta.tags,
+    price: r.priceUsd,
+    priceUSDC: r.record.priceUSDC,
+    publishedAt: r.meta.publishedAt,
+    attestationUID: r.record.attestationUID,
+  };
+}
+
+/** Case-insensitive substring match over title / summary / author / org / tags. */
+export function catalogMatches(item: CatalogItem, q: string): boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  const hay = [item.title, item.summary, item.author, item.authorOrg, ...item.tags]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return hay.includes(needle);
+}
+
+/** The agent-facing catalog (GET /api/v1/articles): published reports, newest
+ *  first, metadata only, optionally filtered by a free-text query `q`. */
+export function listAgentCatalog(q?: string): CatalogItem[] {
+  const items = listReaderCatalog().map(toCatalogItem);
+  return q && q.trim() ? items.filter((i) => catalogMatches(i, q)) : items;
+}
+
 /** A single published report, or null if the slug is not published (not in the index). */
 export function getPublishedReport(slug: string): PublishedReport | null {
   const rec = readIndex().find((r) => r.slug === slug);

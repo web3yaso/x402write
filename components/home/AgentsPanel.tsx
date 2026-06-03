@@ -22,8 +22,9 @@ const SETUP_PROMPTS: Record<Provider, string> = {
     "Set up a Circle programmable wallet on Base Sepolia.\nFund it with test USDC (https://docs.base.org/base-chain/network-information/network-faucets) and sign x402\npayments with it to unlock paid reads.",
 };
 
-// The paid endpoint that works today. (Search / authors indexes are planned.)
+// The endpoints that work today.
 const ENDPOINTS = [
+  { method: "GET", post: false, path: "/api/v1/articles", meta: "free · list catalog · ?q= to search" },
   { method: "GET", post: false, path: "/api/v1/articles/{slug}", meta: "402 → pay → 200 · author-set price" },
 ];
 
@@ -70,7 +71,8 @@ export function AgentsPanel() {
 
       <div className="a-sec-num" style={{ marginTop: "48px" }}>3. Or call the endpoint directly</div>
       <p className="a-sec-desc">
-        Send <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>GET {"/api/v1/articles/{slug}"}</code>.
+        List the catalog (free) with <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>GET /api/v1/articles</code> (add <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>?q=</code> to search), then pay for one:
+        <br />Send <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>GET {"/api/v1/articles/{slug}"}</code>.
         You get <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>402 Payment Required</code> with the payment requirements
         (network <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>eip155:84532</code> Base Sepolia, the USDC asset, the author payTo, the price) —
         your agent pays USDC and retries. <code style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", background: "var(--paper-soft)", padding: "1px 4px", borderRadius: "3px" }}>200</code> returns the full markdown + companion + citation.
