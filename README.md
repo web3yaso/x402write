@@ -95,8 +95,3 @@ pnpm test                              # 全量单测(Vitest)
 | `pnpm seed <slug…>` | 把文章上链并写入目录 |
 | `pnpm reset-demo` | 重置到干净的演示开场(清 payment-log + 撤下导入示例) |
 | `pnpm tsx scripts/encrypt-content.ts <slug>` | 把明文文章加密成 `.mdx` + `.enc` |
-
-## 部署 & 演示
-
-- 部署到 Vercel + serverless 文件写入注意事项:[DEPLOY.md](DEPLOY.md)
-- 3 分钟演示脚本:[docs/DEMO.md](docs/DEMO.md)
