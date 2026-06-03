@@ -41,6 +41,29 @@
 
 闭环:**列目录 → 拿某项的 `read` 路径 → GET 它付费读全文**。接入说明见 [`public/SKILL.md`](public/SKILL.md);付款用 **Cobo Agentic Wallet**(原生 x402,Base Sepolia 链 `TBASE_SETH`)。
 
+## 演示:基于 Cobo 的阅读 Agent
+
+演示里有一个独立的「阅读 Agent」——它替用户发现、付费、读完 x402write 的文章再作答。四层各司其职:
+
+| 组件 | 职责 |
+|---|---|
+| **Vercel AI SDK** | **Agent 编排** —— 理解用户问题、决定调哪个端点、把全文组织成带出处的回答 |
+| **x402** | **付费阅读协议** —— 命中 `402 Payment Required` 时按协议付费并重试,拿到 `200` 全文 |
+| **Cobo Agentic Wallet** | **钱包执行与权限强制** —— 实际持有 USDC、签名并提交 x402 付款;所有链上动作都在策略内执行 |
+| **Cobo pact** | **用户授权边界** —— 用户一次性批准的策略(花多少、付给谁、在哪条链);Agent 只能在此边界内花钱,越界即被拒 |
+
+**串起来的一次问答:**
+
+```
+用户提问
+  → [Vercel AI SDK] Agent 决定读哪篇:GET /api/v1/articles?q=… 发现目录
+  → 取该项的 read 路径:GET /api/v1/articles/{slug} → 命中 402
+  → [x402] 把 Payment-Required 交给钱包
+  → [Cobo Agentic Wallet] 在 [pact] 授权边界内签名并付 USDC(Base Sepolia)
+  → 重试拿到 200 全文 + companion
+  → [Vercel AI SDK] Agent 带作者 + 链上存证出处作答
+```
+
 ## 技术栈
 
 Next.js 16 (App Router) · React 19 · TypeScript · viem/wagmi ·
