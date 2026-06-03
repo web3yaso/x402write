@@ -24,7 +24,7 @@ const SETUP_PROMPTS: Record<Provider, string> = {
 
 // The endpoints that work today.
 const ENDPOINTS = [
-  { method: "GET", post: false, path: "/api/v1/articles", meta: "free · list catalog · ?q= to search" },
+  { method: "GET", post: false, path: "/api/v1/articles", meta: "free · list · ?q= ?tag= ?author=" },
   { method: "GET", post: false, path: "/api/v1/articles/{slug}", meta: "402 → pay → 200 · author-set price" },
 ];
 

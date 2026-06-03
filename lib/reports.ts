@@ -116,11 +116,26 @@ export function catalogMatches(item: CatalogItem, q: string): boolean {
   return hay.includes(needle);
 }
 
+export type CatalogFilters = {
+  q?: string;       // free-text over title/summary/author/org/tags
+  tag?: string;     // substring match on any tag
+  author?: string;  // substring match on author name or org
+};
+
 /** The agent-facing catalog (GET /api/v1/articles): published reports, newest
- *  first, metadata only, optionally filtered by a free-text query `q`. */
-export function listAgentCatalog(q?: string): CatalogItem[] {
-  const items = listReaderCatalog().map(toCatalogItem);
-  return q && q.trim() ? items.filter((i) => catalogMatches(i, q)) : items;
+ *  first, metadata only, narrowed by any combination of q / tag / author (AND). */
+export function listAgentCatalog(filters: CatalogFilters = {}): CatalogItem[] {
+  const q = filters.q?.trim();
+  const tag = filters.tag?.trim().toLowerCase();
+  const author = filters.author?.trim().toLowerCase();
+  let items = listReaderCatalog().map(toCatalogItem);
+  if (q) items = items.filter((i) => catalogMatches(i, q));
+  if (tag) items = items.filter((i) => i.tags.some((t) => t.toLowerCase().includes(tag)));
+  if (author)
+    items = items.filter(
+      (i) => i.author.toLowerCase().includes(author) || (i.authorOrg ?? "").toLowerCase().includes(author),
+    );
+  return items;
 }
 
 /** A single published report, or null if the slug is not published (not in the index). */

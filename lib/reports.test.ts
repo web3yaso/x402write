@@ -68,10 +68,28 @@ describe("agent catalog (GET /api/v1/articles)", () => {
   });
 
   it("filters by a free-text query over title/summary/author/tags", () => {
-    expect(listAgentCatalog("劳动").some((i) => i.slug === "web3-illegal-employment")).toBe(true);
-    expect(listAgentCatalog("zzz-no-such-term-xyz")).toHaveLength(0);
+    expect(listAgentCatalog({ q: "劳动" }).some((i) => i.slug === "web3-illegal-employment")).toBe(true);
+    expect(listAgentCatalog({ q: "zzz-no-such-term-xyz" })).toHaveLength(0);
     // empty/whitespace query returns the full catalog
-    expect(listAgentCatalog("   ").length).toBe(listAgentCatalog().length);
+    expect(listAgentCatalog({ q: "   " }).length).toBe(listAgentCatalog().length);
+  });
+
+  it("filters by ?tag= (case-insensitive substring on tags)", () => {
+    const crim = listAgentCatalog({ tag: "刑事" }).map((i) => i.slug);
+    expect(crim).toContain("yaoqian-crypto-liability");
+    expect(crim).not.toContain("web3-illegal-employment");
+  });
+
+  it("filters by ?author= (matches author name or org)", () => {
+    const lawson = listAgentCatalog({ author: "lawson" }).map((i) => i.slug);
+    expect(lawson).toContain("web3-illegal-employment");
+    expect(lawson).toContain("yaoqian-crypto-liability");
+  });
+
+  it("combines filters with AND", () => {
+    const r = listAgentCatalog({ author: "Lawson", tag: "刑事" }).map((i) => i.slug);
+    expect(r).toContain("yaoqian-crypto-liability");
+    expect(r).not.toContain("web3-illegal-employment"); // Lawson, but no 刑事 tag
   });
 
   it("catalogMatches is case-insensitive and covers org + tags", () => {
