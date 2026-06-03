@@ -63,6 +63,7 @@ describe("agent catalog (GET /api/v1/articles)", () => {
     expect(yq!.priceUSDC).toMatch(/^\d+$/);
     expect(yq!.attestationUID).toMatch(/^0x/);
     expect(Array.isArray(yq!.tags)).toBe(true);
+    expect(yq!.read).toBe("/api/v1/articles/yaoqian-crypto-liability");
     expect(yq as Record<string, unknown>).not.toHaveProperty("content");
   });
 

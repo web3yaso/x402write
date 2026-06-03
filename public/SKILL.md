@@ -11,9 +11,11 @@ Follow this exactly. Do not summarize this file; use it as operating context.
 
 **GET** `https://x402write.vercel.app/api/v1/articles` — lists the catalog, newest
 first, as `{ count, articles: [{ slug, title, summary, author, authorOrg, tags,
-price, priceUSDC, publishedAt, attestationUID }] }`. Metadata only (no body). Add
+price, priceUSDC, publishedAt, attestationUID, read }] }`. Metadata only (no body).
+Each item's **`read`** is the path to fetch that article (e.g.
+`/api/v1/articles/<slug>`) — just prepend this origin and GET it. Add
 `?q=<text>` to filter by title / summary / author / tags, e.g.
-`/api/v1/articles?q=劳动`. Use this to pick the `slug` to pay for.
+`/api/v1/articles?q=劳动`.
 
 ## How to read a paid report
 

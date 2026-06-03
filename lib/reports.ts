@@ -85,6 +85,7 @@ export type CatalogItem = {
   priceUSDC: string;    // "300000" (base units)
   publishedAt: string;
   attestationUID: string;
+  read: string;         // paid endpoint path to fetch this article, e.g. "/api/v1/articles/<slug>"
 };
 
 /** Project a published report to the public catalog shape (no `content`). */
@@ -100,6 +101,7 @@ export function toCatalogItem(r: PublishedReport): CatalogItem {
     priceUSDC: r.record.priceUSDC,
     publishedAt: r.meta.publishedAt,
     attestationUID: r.record.attestationUID,
+    read: `/api/v1/articles/${r.meta.slug}`,
   };
 }
 
